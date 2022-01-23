@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="What is access control?access control，访问控制，指限制人（或物）的行动（执行某些操作或访问某些资源）。 Authentication，身份认证，用来证明人（或物）的身份。 Session management，会话管理，用来证明一系列HTTP请求来自同一用户。 在Web应用中，Authentication和Session management用的比较多。 从用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burpsuite Academy系列教程-Access control">
+<meta property="og:url" content="http://example.com/2021/08/19/2021-08-19-Access%20control/index.html">
+<meta property="og:site_name" content="想逃避现实的芝麻糊">
+<meta property="og:description" content="What is access control?access control，访问控制，指限制人（或物）的行动（执行某些操作或访问某些资源）。 Authentication，身份认证，用来证明人（或物）的身份。 Session management，会话管理，用来证明一系列HTTP请求来自同一用户。 在Web应用中，Authentication和Session management用的比较多。 从用">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-08-18T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-22T11:31:09.247Z">
+<meta property="article:author" content="芝麻糊">
+<meta property="article:tag" content="Burpsuite Academy系列教程">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/logo.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/logo.ico" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/logo.ico">
+        
+      
+    
+    <!-- title -->
+    <title>Burpsuite Academy系列教程-Access control</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2021/08/22/2021-08-22-OS%20command%20injection/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/08/17/2021-08-17-XXE/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/08/19/2021-08-19-Access%20control/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&text=Burpsuite Academy系列教程-Access control"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&title=Burpsuite Academy系列教程-Access control"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&is_video=false&description=Burpsuite Academy系列教程-Access control"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Burpsuite Academy系列教程-Access control&body=Check out this article: http://example.com/2021/08/19/2021-08-19-Access%20control/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&title=Burpsuite Academy系列教程-Access control"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&title=Burpsuite Academy系列教程-Access control"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&title=Burpsuite Academy系列教程-Access control"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&title=Burpsuite Academy系列教程-Access control"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&name=Burpsuite Academy系列教程-Access control&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/08/19/2021-08-19-Access%20control/&t=Burpsuite Academy系列教程-Access control"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#What-is-access-control"><span class="toc-number">1.</span> <span class="toc-text">What is access control?</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Vertical-access-control"><span class="toc-number">1.1.</span> <span class="toc-text">Vertical access control</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Horizontal-access-control"><span class="toc-number">1.2.</span> <span class="toc-text">Horizontal access control</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Context-dependent-access-control"><span class="toc-number">1.3.</span> <span class="toc-text">Context-dependent access control</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Examples-of-broken-access-controls"><span class="toc-number">2.</span> <span class="toc-text">Examples of broken access controls</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Vertical-privilege-escalation"><span class="toc-number">2.1.</span> <span class="toc-text">Vertical privilege escalation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Unprotected-functionality"><span class="toc-number">2.1.1.</span> <span class="toc-text">Unprotected functionality</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-Unprotected-admin-functionality"><span class="toc-number">2.1.1.1.</span> <span class="toc-text">Lab: Unprotected admin functionality</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-Unprotected-admin-functionality-with-unpredictable-URL"><span class="toc-number">2.1.1.2.</span> <span class="toc-text">Lab: Unprotected admin functionality with unpredictable URL</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Parameter-based-access-control-methods"><span class="toc-number">2.1.2.</span> <span class="toc-text">Parameter-based access control methods</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-User-role-controlled-by-request-parameter"><span class="toc-number">2.1.2.1.</span> <span class="toc-text">Lab: User role controlled by request parameter</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Broken-access-control-resulting-from-platform-misconfiguration"><span class="toc-number">2.1.3.</span> <span class="toc-text">Broken access control resulting from platform misconfiguration</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-URL-based-access-control-can-be-circumvented"><span class="toc-number">2.1.3.1.</span> <span class="toc-text">Lab: URL-based access control can be circumvented</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-Method-based-access-control-can-be-circumvented"><span class="toc-number">2.1.3.2.</span> <span class="toc-text">Lab: Method-based access control can be circumvented</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">2.1.3.3.</span> <span class="toc-text">小结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Horizontal-privilege-escalation"><span class="toc-number">2.2.</span> <span class="toc-text">Horizontal privilege escalation</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-User-ID-controlled-by-request-parameter"><span class="toc-number">2.2.0.1.</span> <span class="toc-text">Lab: User ID controlled by request parameter</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-User-ID-controlled-by-request-parameter-with-unpredictable-user-IDs"><span class="toc-number">2.2.0.2.</span> <span class="toc-text">Lab: User ID controlled by request parameter, with unpredictable user IDs</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-User-ID-controlled-by-request-parameter-with-data-leakage-in-redirect"><span class="toc-number">2.2.0.3.</span> <span class="toc-text">Lab: User ID controlled by request parameter with data leakage in redirect</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Horizontal-to-vertical-privilege-escalation"><span class="toc-number">2.3.</span> <span class="toc-text">Horizontal to vertical privilege escalation</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-User-ID-controlled-by-request-parameter-with-password-disclosure"><span class="toc-number">2.3.0.1.</span> <span class="toc-text">Lab: User ID controlled by request parameter with password disclosure</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Insecure-direct-object-references"><span class="toc-number">2.3.1.</span> <span class="toc-text">Insecure direct object references</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-Insecure-direct-object-references"><span class="toc-number">2.3.1.1.</span> <span class="toc-text">Lab: Insecure direct object references</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Access-control-vulnerabilities-in-multi-step-processes"><span class="toc-number">2.3.2.</span> <span class="toc-text">Access control vulnerabilities in multi-step processes</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-Multi-step-process-with-no-access-control-on-one-step"><span class="toc-number">2.3.2.1.</span> <span class="toc-text">Lab: Multi-step process with no access control on one step</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Referer-based-access-control"><span class="toc-number">2.3.3.</span> <span class="toc-text">Referer-based access control</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-Referer-based-access-control"><span class="toc-number">2.3.3.1.</span> <span class="toc-text">Lab: Referer-based access control</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Location-based-access-control"><span class="toc-number">2.3.4.</span> <span class="toc-text">Location-based access control</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#How-to-prevent-access-control-vulnerabilities"><span class="toc-number">3.</span> <span class="toc-text">How to prevent access control vulnerabilities</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Burpsuite Academy系列教程-Access control
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">c-uncle</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-08-18T16:00:00.000Z" itemprop="datePublished">2021-08-19</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Burpsuite-Academy%E7%B3%BB%E5%88%97%E6%95%99%E7%A8%8B/" rel="tag">Burpsuite Academy系列教程</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="What-is-access-control"><a href="#What-is-access-control" class="headerlink" title="What is access control?"></a>What is access control?</h1><p>access control，访问控制，指限制人（或物）的行动（执行某些操作或访问某些资源）。</p>
+<p>Authentication，身份认证，用来证明人（或物）的身份。</p>
+<p>Session management，会话管理，用来证明一系列HTTP请求来自同一用户。</p>
+<p>在Web应用中，Authentication和Session management用的比较多。</p>
+<p>从用户的角度看，访问控制可以被分为以下三类。</p>
+<ul>
+<li>Vertical access control，垂直访问控制</li>
+<li>Horizontal access control，水平访问控制</li>
+<li>Context-dependent access control，上下文相关访问控制</li>
+</ul>
+<h2 id="Vertical-access-control"><a href="#Vertical-access-control" class="headerlink" title="Vertical access control"></a>Vertical access control</h2><p>定义：不同类型的用户有不同的权限，并且不同类型的用户不一定会拥有对方的所有权限。</p>
+<h2 id="Horizontal-access-control"><a href="#Horizontal-access-control" class="headerlink" title="Horizontal access control"></a>Horizontal access control</h2><p>定义：不同的用户拥有对某种类型的资源中的一部分的访问权限。</p>
+<p>举例：银行账户，每个人都有账户，但都只能操作自己的账号，不能操作其他人的账号。</p>
+<h2 id="Context-dependent-access-control"><a href="#Context-dependent-access-control" class="headerlink" title="Context-dependent access control"></a>Context-dependent access control</h2><p>定义：对使用某个功能的权限，需要另外一个功能完成后的认证。</p>
+<p>举例：购物，付款后就不能再修改账单中的物品。修改密码，改密码前需要先验证身份。</p>
+<h1 id="Examples-of-broken-access-controls"><a href="#Examples-of-broken-access-controls" class="headerlink" title="Examples of broken access controls"></a>Examples of broken access controls</h1><h2 id="Vertical-privilege-escalation"><a href="#Vertical-privilege-escalation" class="headerlink" title="Vertical privilege escalation"></a>Vertical privilege escalation</h2><p>如果用户可以访问他们不能访问的功能，那么就会造成垂直越权。</p>
+<h3 id="Unprotected-functionality"><a href="#Unprotected-functionality" class="headerlink" title="Unprotected functionality"></a>Unprotected functionality</h3><p>当应用没有对敏感功能做保护，导致攻击者也可以执行敏感函数，这时就导致了垂直越权。</p>
+<p>例如：没有对管理员页面做保护，导致攻击者可以直接访问管理员页面，从而实现垂直越权。</p>
+<h4 id="Lab-Unprotected-admin-functionality"><a href="#Lab-Unprotected-admin-functionality" class="headerlink" title="Lab: Unprotected admin functionality"></a>Lab: Unprotected admin functionality</h4><p>访问/robots.txt，拿到后台url为/administrator-panel</p>
+<p>应用为了反爬虫，将自己后台地址放在的/robots.txt，但是没有对后台做任何权限验证。</p>
+<h4 id="Lab-Unprotected-admin-functionality-with-unpredictable-URL"><a href="#Lab-Unprotected-admin-functionality-with-unpredictable-URL" class="headerlink" title="Lab: Unprotected admin functionality with unpredictable URL"></a>Lab: Unprotected admin functionality with unpredictable URL</h4><p>ctrl+U，查看源代码，在JS代码中，找到后台地址/admin-y4ecy5。</p>
+<p>虽然应用对后台地址进行加密（指加上奇怪后缀，防止攻击者爆破），但是依然可以在前端中脚本代码找到蛛丝马迹。</p>
+<h3 id="Parameter-based-access-control-methods"><a href="#Parameter-based-access-control-methods" class="headerlink" title="Parameter-based access control methods"></a>Parameter-based access control methods</h3><p>基于参数的访问控制，通过在http请求中加上参数来验证来者身份。这种做法很无用，因为人人都可以构造参数，根不防不住。</p>
+<h4 id="Lab-User-role-controlled-by-request-parameter"><a href="#Lab-User-role-controlled-by-request-parameter" class="headerlink" title="Lab: User role controlled by request parameter"></a>Lab: User role controlled by request parameter</h4><p>直接访问/admin是不行的。可以用教程提供的账号登录一下。通过抓包可以看到，cookie字段中有一个Admin=false，利用bp修改为Admin=true即可绕过限制。</p>
+<h3 id="Broken-access-control-resulting-from-platform-misconfiguration"><a href="#Broken-access-control-resulting-from-platform-misconfiguration" class="headerlink" title="Broken access control resulting from platform misconfiguration"></a>Broken access control resulting from platform misconfiguration</h3><p>利用平台错误配置来绕过访问限制。</p>
+<p>应用程序可以通过限制用户可访问的URL来实现访问控制，举例：可以定义”DENY: POST, /admin/deleteUser, managers”，该规则限制用户不能对/admin/deleteUser发起POST请求。</p>
+<p>但是在HTTP协议中，可以利用一些头部字段来绕过限制，例如，X-original-URL和X-Rewrite-URL。</p>
+<h4 id="Lab-URL-based-access-control-can-be-circumvented"><a href="#Lab-URL-based-access-control-can-be-circumvented" class="headerlink" title="Lab: URL-based access control can be circumvented"></a>Lab: URL-based access control can be circumvented</h4><p>访问/admin会现实Access Denied。可以在HTTP请求的头部加入X-Original-URL字段，其值为/admin，即可绕过限制。</p>
+<p>删除用户名的操作就是添加头部字段X-Original-URL: /admin/delete，注意删除操作所需要的参数要填在第一行的URL后面。</p>
+<p>将参数填在X-Original-URL是没有效果的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GET /?username=carlos HTTP/1.1</span><br><span class="line">Host: ac0f1fa61e91cc46805190b400d70019.web-security-academy.net</span><br><span class="line">X-Rewrite-URL: /admin/delete</span><br></pre></td></tr></table></figure>
+
+<h4 id="Lab-Method-based-access-control-can-be-circumvented"><a href="#Lab-Method-based-access-control-can-be-circumvented" class="headerlink" title="Lab: Method-based access control can be circumvented"></a>Lab: Method-based access control can be circumvented</h4><p>这个lab的目标是在不使用Administrator账户的情况下，提高wiener账户权限。</p>
+<p>先登录Administrator账户，给carlors账户提高权限，抓取数据包。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">POST /admin-roles HTTP/1.1</span><br><span class="line">Host: ac681fef1f7fe43480c313d8000f002b.web-security-academy.net</span><br><span class="line">Connection: close</span><br><span class="line">Content-Length: 30</span><br><span class="line">Cache-Control: max-age=0</span><br><span class="line">sec-ch-ua: &quot;Chromium&quot;;v=&quot;92&quot;, &quot; Not A;Brand&quot;;v=&quot;99&quot;, &quot;Microsoft Edge&quot;;v=&quot;92&quot;</span><br><span class="line">sec-ch-ua-mobile: ?0</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36 Edg/92.0.902.73</span><br><span class="line">Origin: https://ac681fef1f7fe43480c313d8000f002b.web-security-academy.net</span><br><span class="line">Content-Type: application/x-www-form-urlencoded</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9</span><br><span class="line">Sec-Fetch-Site: same-origin</span><br><span class="line">Sec-Fetch-Mode: navigate</span><br><span class="line">Sec-Fetch-User: ?1</span><br><span class="line">Sec-Fetch-Dest: document</span><br><span class="line">Referer: https://ac681fef1f7fe43480c313d8000f002b.web-security-academy.net/admin</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6</span><br><span class="line">Cookie: session=oA1FQoflXSDzHIQvYbMH70ZL9Fbjzemh</span><br><span class="line"></span><br><span class="line">username=carlos&amp;action=upgrade</span><br></pre></td></tr></table></figure>
+
+<p>尝试使用Repeat模块重复数据包失败，显示401，未授权。</p>
+<p>将数据包改为GET请求，再次发送数据包，修改成功。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>一般来说，通过平台来实现访问控制有两种方法，一是限制URL，二是限制HTTP请求的模式。</p>
+<p>前者可以尝试使用X-original-URL或X-rewrite-URL来绕过，后者可以尝试使用修改请求方法来绕过。</p>
+<h2 id="Horizontal-privilege-escalation"><a href="#Horizontal-privilege-escalation" class="headerlink" title="Horizontal privilege escalation"></a>Horizontal privilege escalation</h2><p>第一种水平越权的攻击方法，就是直接修改URL里的参数，导致出现越权访问。</p>
+<p>利用查看用户信息的URL由参数id来显示对应的用户信息，但是没有做保护，导致攻击者可以任意查看用户信息。</p>
+<h4 id="Lab-User-ID-controlled-by-request-parameter"><a href="#Lab-User-ID-controlled-by-request-parameter" class="headerlink" title="Lab: User ID controlled by request parameter"></a>Lab: User ID controlled by request parameter</h4><p>目标：获取carlos的API key。</p>
+<p>先用wiener:peter登录，点击myaccount，可以看到一个API KEY。</p>
+<p>然后看这个页面的URL，可以看见这个页面中带有一个参数id，其值为wiener。（如果没有就点一下myaccount，登录后跳转的myaccount页面没有这个参数）</p>
+<p>构造id=carlos，成功获得carlos的API KEY</p>
+<hr>
+<p>有时候，参数id的值是不可预测，应用可能会用一个唯一的数值（globally unique identifiers， GUIDs，全局唯一标识符）来表示用户。但是我们可以从其他地方来获取用户的ID，例如用户的消息或评论。</p>
+<h4 id="Lab-User-ID-controlled-by-request-parameter-with-unpredictable-user-IDs"><a href="#Lab-User-ID-controlled-by-request-parameter-with-unpredictable-user-IDs" class="headerlink" title="Lab: User ID controlled by request parameter, with unpredictable user IDs"></a>Lab: User ID controlled by request parameter, with unpredictable user IDs</h4><p>目标：找到carlos的GUID，获取其API KEY。</p>
+<p>这个lab网站是一个博客，把文章挨个看一下，其中有一篇文章是carlos发的，点击carlos的名称，可以看到url中的userid。</p>
+<p>用wiener:peter登录，将myaccount页面的URL中wiener的id替换为carlos的id即可。</p>
+<hr>
+<p>有些应用会检测发起请求的用户是否有权限，如果没有就返回一个重定向，但是有时候没处理好，我们依然可以在重定向的响应中获取敏感信息。</p>
+<h4 id="Lab-User-ID-controlled-by-request-parameter-with-data-leakage-in-redirect"><a href="#Lab-User-ID-controlled-by-request-parameter-with-data-leakage-in-redirect" class="headerlink" title="Lab: User ID controlled by request parameter with data leakage in redirect"></a>Lab: User ID controlled by request parameter with data leakage in redirect</h4><p>目标：绕过限制获取carlos的API KEY</p>
+<p>先用wiener:peter登录，点击myaccount，可以看到一个API KEY。</p>
+<p>然后看这个页面的URL，可以看见这个页面中带有一个参数id，其值为wiener。（如果没有就点一下myaccount，登录后跳转的myaccount页面没有这个参数）</p>
+<p>构造id=carlos，虽然响应是302（重定向），但是在bp里依旧能看见越权成功的内容，成功获得carlos的API KEY</p>
+<hr>
+<h2 id="Horizontal-to-vertical-privilege-escalation"><a href="#Horizontal-to-vertical-privilege-escalation" class="headerlink" title="Horizontal to vertical privilege escalation"></a>Horizontal to vertical privilege escalation</h2><p>水平到垂直的越权。有时候，攻击者可以利用水平越权看到管理员账户的页面，这个页面可能会泄露密码或提供了修改密码的功能。这时，攻击者就实现一个水平到垂直的越权。</p>
+<h4 id="Lab-User-ID-controlled-by-request-parameter-with-password-disclosure"><a href="#Lab-User-ID-controlled-by-request-parameter-with-password-disclosure" class="headerlink" title="Lab: User ID controlled by request parameter with password disclosure"></a>Lab: User ID controlled by request parameter with password disclosure</h4><p>目标：获取管理员账户，并删除carlos的账户。</p>
+<p>登录wiener账户，可以看见在myaccount页面里有被掩盖的password，使用F12查看真实的password。</p>
+<p>利用水平越权漏洞，查看administrator的密码，并登录administrator，删除carlos的账户。</p>
+<hr>
+<h3 id="Insecure-direct-object-references"><a href="#Insecure-direct-object-references" class="headerlink" title="Insecure direct object references"></a>Insecure direct object references</h3><p>不安全的直接对象引用。应用程序使用用户提交的参数作为对象直接引用，导致攻击者可以控制参数实现攻击。举例：任意文件读取。</p>
+<h4 id="Lab-Insecure-direct-object-references"><a href="#Lab-Insecure-direct-object-references" class="headerlink" title="Lab: Insecure direct object references"></a>Lab: Insecure direct object references</h4><p>目标：获取carlos的密码，并登录其账户。</p>
+<p>点击live chat-&gt;view transcript，这时开始下载聊天记录，通过bp抓包，发现这是静态资源，通过下载1.txt获取密码。（为什么是1.txt？因为第一次点下载的是2.txt，说明1.txt已经存在了）</p>
+<p>应用程序会将聊天记录保存在服务器上，并提供给用户访问进行下载。</p>
+<h3 id="Access-control-vulnerabilities-in-multi-step-processes"><a href="#Access-control-vulnerabilities-in-multi-step-processes" class="headerlink" title="Access control vulnerabilities in multi-step processes"></a>Access control vulnerabilities in multi-step processes</h3><p>多步骤访问控制漏洞。例如管理员更新用户信息操作，可分为三步。</p>
+<ol>
+<li>加载特定用户的信息</li>
+<li>修改用户信息</li>
+<li>查看更新后的用户信息</li>
+</ol>
+<p>如果应用程序只对前两步进行访问控制，而忽略第三步，那么就会出现攻击者直接进行第三步，而程序以为前两步已完成，从而实现攻击。</p>
+<h4 id="Lab-Multi-step-process-with-no-access-control-on-one-step"><a href="#Lab-Multi-step-process-with-no-access-control-on-one-step" class="headerlink" title="Lab: Multi-step process with no access control on one step"></a>Lab: Multi-step process with no access control on one step</h4><p>目标：使用wiener:perter为wiener提高权限。</p>
+<p>使用administrator账户为carlos提高权限，并观察。</p>
+<p>发现提升权限需要两步。</p>
+<ol>
+<li>点击提权，跳转到新页面</li>
+<li>在新页面里点击Yes，成功提权。</li>
+</ol>
+<p>这是第一次点击的POST请求。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">POST /admin-roles HTTP/1.1</span><br><span class="line">Host: ac161f681f87b09b807cb187009300f8.web-security-academy.net</span><br><span class="line">Connection: close</span><br><span class="line">Content-Length: 30</span><br><span class="line">Cache-Control: max-age=0</span><br><span class="line">sec-ch-ua: &quot;Chromium&quot;;v=&quot;92&quot;, &quot; Not A;Brand&quot;;v=&quot;99&quot;, &quot;Microsoft Edge&quot;;v=&quot;92&quot;</span><br><span class="line">sec-ch-ua-mobile: ?0</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36 Edg/92.0.902.73</span><br><span class="line">Origin: https://ac161f681f87b09b807cb187009300f8.web-security-academy.net</span><br><span class="line">Content-Type: application/x-www-form-urlencoded</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9</span><br><span class="line">Sec-Fetch-Site: same-origin</span><br><span class="line">Sec-Fetch-Mode: navigate</span><br><span class="line">Sec-Fetch-User: ?1</span><br><span class="line">Sec-Fetch-Dest: document</span><br><span class="line">Referer: https://ac161f681f87b09b807cb187009300f8.web-security-academy.net/admin</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6</span><br><span class="line">Cookie: session=DEk9JzHeiQYy43t2Rs7JpHABuzuu765a</span><br><span class="line"></span><br><span class="line">username=carlos&amp;action=upgrade</span><br></pre></td></tr></table></figure>
+
+<p>这是点击Yes以后的POST请求</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">POST /admin-roles HTTP/1.1</span><br><span class="line">Host: ac161f681f87b09b807cb187009300f8.web-security-academy.net</span><br><span class="line">Connection: close</span><br><span class="line">Content-Length: 45</span><br><span class="line">Cache-Control: max-age=0</span><br><span class="line">sec-ch-ua: &quot;Chromium&quot;;v=&quot;92&quot;, &quot; Not A;Brand&quot;;v=&quot;99&quot;, &quot;Microsoft Edge&quot;;v=&quot;92&quot;</span><br><span class="line">sec-ch-ua-mobile: ?0</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36 Edg/92.0.902.73</span><br><span class="line">Origin: https://ac161f681f87b09b807cb187009300f8.web-security-academy.net</span><br><span class="line">Content-Type: application/x-www-form-urlencoded</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9</span><br><span class="line">Sec-Fetch-Site: same-origin</span><br><span class="line">Sec-Fetch-Mode: navigate</span><br><span class="line">Sec-Fetch-User: ?1</span><br><span class="line">Sec-Fetch-Dest: document</span><br><span class="line">Referer: https://ac161f681f87b09b807cb187009300f8.web-security-academy.net/admin-roles</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6</span><br><span class="line">Cookie: session=DEk9JzHeiQYy43t2Rs7JpHABuzuu765a</span><br><span class="line"></span><br><span class="line">action=upgrade&amp;confirmed=true&amp;username=carlos</span><br></pre></td></tr></table></figure>
+
+<p>观察两次POST请求，可以看到第二次请求多了一个confirmed参数，也就是说，我们只需要构造第二个请求就可以实现越权攻击。</p>
+<h3 id="Referer-based-access-control"><a href="#Referer-based-access-control" class="headerlink" title="Referer-based access control"></a>Referer-based access control</h3><p>基于Referer字段的访问控制。</p>
+<p>有些站点会对HTTP请求的Referer字段进行验证，以限制发起该请求的用户的权限。</p>
+<h4 id="Lab-Referer-based-access-control"><a href="#Lab-Referer-based-access-control" class="headerlink" title="Lab: Referer-based access control"></a>Lab: Referer-based access control</h4><p>目标：提高wiener的权限。</p>
+<p>先用administrator提升carlos的权限，观察HTTP请求。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">GET /admin-roles?username=carlos&amp;action=upgrade HTTP/1.1</span><br><span class="line">Host: ac191f011eabfcd68121d84e00b8000f.web-security-academy.net</span><br><span class="line">Connection: close</span><br><span class="line">Cache-Control: max-age=0</span><br><span class="line">sec-ch-ua: &quot;Chromium&quot;;v=&quot;92&quot;, &quot; Not A;Brand&quot;;v=&quot;99&quot;, &quot;Microsoft Edge&quot;;v=&quot;92&quot;</span><br><span class="line">sec-ch-ua-mobile: ?0</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36 Edg/92.0.902.73</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9</span><br><span class="line">Sec-Fetch-Site: same-origin</span><br><span class="line">Sec-Fetch-Mode: navigate</span><br><span class="line">Sec-Fetch-User: ?1</span><br><span class="line">Sec-Fetch-Dest: document</span><br><span class="line">Referer: https://ac191f011eabfcd68121d84e00b8000f.web-security-academy.net/admin</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6</span><br><span class="line">Cookie: session=stly6A95K5BYg0ljncq0HeXyqbgjPfvR</span><br></pre></td></tr></table></figure>
+
+<p>看到Referer，猜测程序会验证请求是否来自/admin。保留Referer字段，构造wiener的请求即可。</p>
+<h3 id="Location-based-access-control"><a href="#Location-based-access-control" class="headerlink" title="Location-based access control"></a>Location-based access control</h3><p>有些站点会通过用户的地理位置来限制权限，绕过的办法一般是使用VPN或网络代理，或操纵客户端地理定位机制。</p>
+<h1 id="How-to-prevent-access-control-vulnerabilities"><a href="#How-to-prevent-access-control-vulnerabilities" class="headerlink" title="How to prevent access control vulnerabilities"></a>How to prevent access control vulnerabilities</h1><ol>
+<li>不要仅仅依赖混淆来控制访问</li>
+<li>一个资源除非被设定为公开资源，否则默认不允许访问</li>
+<li>Wherever possible, use a single application-wide mechanism for enforcing access controls（不能理解）</li>
+<li>在代码层面，强制要去开发者设定资源的访问权限，默认设定拒绝访问。</li>
+<li>彻底审核和测试访问权限，确保设计有用。</li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#What-is-access-control"><span class="toc-number">1.</span> <span class="toc-text">What is access control?</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Vertical-access-control"><span class="toc-number">1.1.</span> <span class="toc-text">Vertical access control</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Horizontal-access-control"><span class="toc-number">1.2.</span> <span class="toc-text">Horizontal access control</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Context-dependent-access-control"><span class="toc-number">1.3.</span> <span class="toc-text">Context-dependent access control</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Examples-of-broken-access-controls"><span class="toc-number">2.</span> <span class="toc-text">Examples of broken access controls</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Vertical-privilege-escalation"><span class="toc-number">2.1.</span> <span class="toc-text">Vertical privilege escalation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Unprotected-functionality"><span class="toc-number">2.1.1.</span> <span class="toc-text">Unprotected functionality</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-Unprotected-admin-functionality"><span class="toc-number">2.1.1.1.</span> <span class="toc-text">Lab: Unprotected admin functionality</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-Unprotected-admin-functionality-with-unpredictable-URL"><span class="toc-number">2.1.1.2.</span> <span class="toc-text">Lab: Unprotected admin functionality with unpredictable URL</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Parameter-based-access-control-methods"><span class="toc-number">2.1.2.</span> <span class="toc-text">Parameter-based access control methods</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-User-role-controlled-by-request-parameter"><span class="toc-number">2.1.2.1.</span> <span class="toc-text">Lab: User role controlled by request parameter</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Broken-access-control-resulting-from-platform-misconfiguration"><span class="toc-number">2.1.3.</span> <span class="toc-text">Broken access control resulting from platform misconfiguration</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-URL-based-access-control-can-be-circumvented"><span class="toc-number">2.1.3.1.</span> <span class="toc-text">Lab: URL-based access control can be circumvented</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-Method-based-access-control-can-be-circumvented"><span class="toc-number">2.1.3.2.</span> <span class="toc-text">Lab: Method-based access control can be circumvented</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">2.1.3.3.</span> <span class="toc-text">小结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Horizontal-privilege-escalation"><span class="toc-number">2.2.</span> <span class="toc-text">Horizontal privilege escalation</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-User-ID-controlled-by-request-parameter"><span class="toc-number">2.2.0.1.</span> <span class="toc-text">Lab: User ID controlled by request parameter</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-User-ID-controlled-by-request-parameter-with-unpredictable-user-IDs"><span class="toc-number">2.2.0.2.</span> <span class="toc-text">Lab: User ID controlled by request parameter, with unpredictable user IDs</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-User-ID-controlled-by-request-parameter-with-data-leakage-in-redirect"><span class="toc-number">2.2.0.3.</span> <span class="toc-text">Lab: User ID controlled by request parameter with data leakage in redirect</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Horizontal-to-vertical-privilege-escalation"><span class="toc-number">2.3.</span> <span class="toc-text">Horizontal to vertical privilege escalation</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-User-ID-controlled-by-request-parameter-with-password-disclosure"><span class="toc-number">2.3.0.1.</span> <span class="toc-text">Lab: User ID controlled by request parameter with password disclosure</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Insecure-direct-object-references"><span class="toc-number">2.3.1.</span> <span class="toc-text">Insecure direct object references</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-Insecure-direct-object-references"><span class="toc-number">2.3.1.1.</span> <span class="toc-text">Lab: Insecure direct object references</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Access-control-vulnerabilities-in-multi-step-processes"><span class="toc-number">2.3.2.</span> <span class="toc-text">Access control vulnerabilities in multi-step processes</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-Multi-step-process-with-no-access-control-on-one-step"><span class="toc-number">2.3.2.1.</span> <span class="toc-text">Lab: Multi-step process with no access control on one step</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Referer-based-access-control"><span class="toc-number">2.3.3.</span> <span class="toc-text">Referer-based access control</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-Referer-based-access-control"><span class="toc-number">2.3.3.1.</span> <span class="toc-text">Lab: Referer-based access control</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Location-based-access-control"><span class="toc-number">2.3.4.</span> <span class="toc-text">Location-based access control</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#How-to-prevent-access-control-vulnerabilities"><span class="toc-number">3.</span> <span class="toc-text">How to prevent access control vulnerabilities</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/08/19/2021-08-19-Access%20control/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&text=Burpsuite Academy系列教程-Access control"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&title=Burpsuite Academy系列教程-Access control"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&is_video=false&description=Burpsuite Academy系列教程-Access control"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Burpsuite Academy系列教程-Access control&body=Check out this article: http://example.com/2021/08/19/2021-08-19-Access%20control/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&title=Burpsuite Academy系列教程-Access control"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&title=Burpsuite Academy系列教程-Access control"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&title=Burpsuite Academy系列教程-Access control"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&title=Burpsuite Academy系列教程-Access control"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/08/19/2021-08-19-Access%20control/&name=Burpsuite Academy系列教程-Access control&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/08/19/2021-08-19-Access%20control/&t=Burpsuite Academy系列教程-Access control"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2021-2022
+    芝麻糊
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

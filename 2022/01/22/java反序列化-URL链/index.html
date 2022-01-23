@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="前言文章分为四个部分，第一部分URL链整体流程，讲URL链的完整调用。第二部分问题，是我在学习过程中遇到的问题和解决方法。 第三部分是思考，是学习之后的反思感悟。第四部分是文章参考，是我在学习时看的一些文章，以及这些文章各自的特点。 URL链整体流程HashMap.readObject() -&gt; HashMap.putVal() -&gt; HashMap.hash() -&gt; URL.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java反序列化-URL链">
+<meta property="og:url" content="http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/index.html">
+<meta property="og:site_name" content="想逃避现实的芝麻糊">
+<meta property="og:description" content="前言文章分为四个部分，第一部分URL链整体流程，讲URL链的完整调用。第二部分问题，是我在学习过程中遇到的问题和解决方法。 第三部分是思考，是学习之后的反思感悟。第四部分是文章参考，是我在学习时看的一些文章，以及这些文章各自的特点。 URL链整体流程HashMap.readObject() -&gt; HashMap.putVal() -&gt; HashMap.hash() -&gt; URL.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/hashCode.png">
+<meta property="og:image" content="http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/URL-hashCode.png">
+<meta property="og:image" content="http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/hash.png">
+<meta property="og:image" content="http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/putForCreate.png">
+<meta property="og:image" content="http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/readObject.png">
+<meta property="og:image" content="http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/18-readObject.png">
+<meta property="og:image" content="http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/diyURLStreamHandler.png">
+<meta property="article:published_time" content="2022-01-22T12:57:23.000Z">
+<meta property="article:modified_time" content="2022-01-22T13:01:27.679Z">
+<meta property="article:author" content="芝麻糊">
+<meta property="article:tag" content="java安全">
+<meta property="article:tag" content="java反序列化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/hashCode.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/logo.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/logo.ico" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/logo.ico">
+        
+      
+    
+    <!-- title -->
+    <title>java反序列化-URL链</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/12/28/%E5%AD%A6%E4%B9%A0CC1%E9%93%BE%E4%BB%A5%E5%90%8E%E7%9A%84%E6%80%9D%E8%80%83/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&text=java反序列化-URL链"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&title=java反序列化-URL链"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&is_video=false&description=java反序列化-URL链"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=java反序列化-URL链&body=Check out this article: http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&title=java反序列化-URL链"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&title=java反序列化-URL链"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&title=java反序列化-URL链"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&title=java反序列化-URL链"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&name=java反序列化-URL链&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&t=java反序列化-URL链"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#URL%E9%93%BE%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">URL链整体流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%97%AE%E9%A2%98"><span class="toc-number">3.</span> <span class="toc-text">问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ysoserial%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E9%9C%80%E8%A6%81%E9%80%9A%E8%BF%87%E5%8F%8D%E5%B0%84%E5%B0%86hashCode%E8%AE%BE%E7%BD%AE%E4%B8%BA-1"><span class="toc-number">3.1.</span> <span class="toc-text">ysoserial为什么要需要通过反射将hashCode设置为-1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E4%BF%AE%E6%94%B9%E4%BA%8C%E8%BF%9B%E5%88%B6payload%E4%B8%AD%E7%9A%84dnslog%E5%9C%B0%E5%9D%80%EF%BC%8C%E6%98%AF%E5%90%A6%E4%BC%9A%E5%BD%B1%E5%93%8Dpayload%E4%BD%BF%E7%94%A8%EF%BC%9F"><span class="toc-number">3.2.</span> <span class="toc-text">直接修改二进制payload中的dnslog地址，是否会影响payload使用？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ysoserial%E7%9A%84%E8%87%AA%E5%AE%9A%E4%B9%89URLStreamHandler%E6%98%AF%E8%B5%B7%E4%BB%80%E4%B9%88%E4%BD%9C%E7%94%A8%EF%BC%9F"><span class="toc-number">3.3.</span> <span class="toc-text">ysoserial的自定义URLStreamHandler是起什么作用？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8%E8%B0%83%E8%AF%95%E6%97%B6%EF%BC%8C%E4%B8%BA%E4%BD%95%E4%BC%9A%E5%9C%A8%E4%B8%80%E5%BC%80%E5%A7%8B%E5%87%BA%E7%8E%B0%E4%B8%A4%E6%AC%A1URLStreamHandler-hashCode%E6%96%B9%E6%B3%95%E7%9A%84%E8%B0%83%E7%94%A8%EF%BC%9F"><span class="toc-number">3.4.</span> <span class="toc-text">在调试时，为何会在一开始出现两次URLStreamHandler:hashCode方法的调用？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%97%B6%EF%BC%8C%E8%A6%81%E5%A6%82%E4%BD%95%E8%B0%83%E8%AF%95%E8%BF%9B%E5%85%A5hashmap%E7%9A%84readObject%E6%96%B9%E6%B3%95%EF%BC%9F"><span class="toc-number">3.5.</span> <span class="toc-text">反序列化时，要如何调试进入hashmap的readObject方法？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E7%AB%A0%E5%8F%82%E8%80%83"><span class="toc-number">4.</span> <span class="toc-text">文章参考</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%9D%E8%80%83"><span class="toc-number">5.</span> <span class="toc-text">思考</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%80%E5%90%8E%E9%97%AE%E9%A2%98"><span class="toc-number">6.</span> <span class="toc-text">最后问题</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        java反序列化-URL链
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">芝麻糊</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2022-01-22T12:57:23.000Z" itemprop="datePublished">2022-01-22</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" rel="tag">java反序列化</a>, <a class="tag-link-link" href="/tags/java%E5%AE%89%E5%85%A8/" rel="tag">java安全</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>文章分为四个部分，第一部分URL链整体流程，讲URL链的完整调用。第二部分问题，是我在学习过程中遇到的问题和解决方法。</p>
+<p>第三部分是思考，是学习之后的反思感悟。第四部分是文章参考，是我在学习时看的一些文章，以及这些文章各自的特点。</p>
+<h1 id="URL链整体流程"><a href="#URL链整体流程" class="headerlink" title="URL链整体流程"></a>URL链整体流程</h1><p>HashMap.readObject() -&gt; HashMap.putVal() -&gt; HashMap.hash() -&gt; URL.hashCode() -&gt; URLStreamHandler.hashCode()</p>
+<p>注：在jdk1.7中，HashMap.putVal()为HashMap.putForCreate()</p>
+<p><img src="hashCode.png" alt="hashCode方法"></p>
+<p>此处为URLStreamHandler的第354行，getHostAddress方法就是发起dns查询的触发点。</p>
+<p><img src="URL-hashCode.png" alt="URL-hashCode"></p>
+<p>在URL类中，有一个hashCode方法，当hashCode变量为-1时，会去调用handler.hashCode，此处的handler为URLStreamHandler类。</p>
+<p><img src="hash.png" alt="hash"></p>
+<p>在HashMap中，有一个hash方法，调用了hashCode方法，可以看到k的类型是Object，如果可以将k控制为URL类，就可以触发URLStreamHandler的HashCode方法。</p>
+<p><img src="putForCreate.png" alt="putForCreate"></p>
+<p>在HashMap中，有一个putForCreate方法，可以看到方法的第一行使用了hash方法。观察到hash方法的参数为key，如果能控制key为URL类，就可以在hash方法中，去触发URL的hashCode方法。</p>
+<p><img src="readObject.png" alt="readObject"></p>
+<p>在HashMap的readObject方法中，第1156行可以看到putForCreate方法。</p>
+<p><img src="18-readObject.png" alt="1.8-readObject"></p>
+<p>在jdk1.8中，触发hash方法的时putVal方法，可以看到其中一个参数为hash(key)</p>
+<h1 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h1><h2 id="ysoserial为什么要需要通过反射将hashCode设置为-1"><a href="#ysoserial为什么要需要通过反射将hashCode设置为-1" class="headerlink" title="ysoserial为什么要需要通过反射将hashCode设置为-1"></a>ysoserial为什么要需要通过反射将hashCode设置为-1</h2><p>前面提到过，在URL类的hashCode方法中，只有hashCode为-1时，才会去调用handler.hashCode方法。</p>
+<h2 id="直接修改二进制payload中的dnslog地址，是否会影响payload使用？"><a href="#直接修改二进制payload中的dnslog地址，是否会影响payload使用？" class="headerlink" title="直接修改二进制payload中的dnslog地址，是否会影响payload使用？"></a>直接修改二进制payload中的dnslog地址，是否会影响payload使用？</h2><p>只做过一个简单的测试，将dnslgo地址换成一个相等长度，并且格式相同的dnslog地址，payload可以正常使用。</p>
+<h2 id="ysoserial的自定义URLStreamHandler是起什么作用？"><a href="#ysoserial的自定义URLStreamHandler是起什么作用？" class="headerlink" title="ysoserial的自定义URLStreamHandler是起什么作用？"></a>ysoserial的自定义URLStreamHandler是起什么作用？</h2><p><img src="diyURLStreamHandler.png" alt="diy-URLStreamHandler"></p>
+<p>在生成payload的过程中，是会触发hash方法的，为了防止序列化时发起dns lookup，通过自定义URLStreamHandler类，使得getHostAddress方法返回null，这样就不会在生成payload的过程中，发起dns lookup。</p>
+<p>tips：windows下，可以使用ipconfig/flushdns清除dns缓存。</p>
+<h2 id="在调试时，为何会在一开始出现两次URLStreamHandler-hashCode方法的调用？"><a href="#在调试时，为何会在一开始出现两次URLStreamHandler-hashCode方法的调用？" class="headerlink" title="在调试时，为何会在一开始出现两次URLStreamHandler:hashCode方法的调用？"></a>在调试时，为何会在一开始出现两次URLStreamHandler:hashCode方法的调用？</h2><p>那两次调用应该是IDEA的debug模式通过URLClassload去调用自己的class。</p>
+<p>(っ °Д °;)っ 很坑，一度卡到了我的思路</p>
+<h2 id="反序列化时，要如何调试进入hashmap的readObject方法？"><a href="#反序列化时，要如何调试进入hashmap的readObject方法？" class="headerlink" title="反序列化时，要如何调试进入hashmap的readObject方法？"></a>反序列化时，要如何调试进入hashmap的readObject方法？</h2><p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/4761">https://xz.aliyun.com/t/4761</a></p>
+<p>大概流程就是ObjectInputStream:readObject方法调用了readObject0，然后去读取字节流，获取类，然后使用反射去调用类的readObject方法。</p>
+<h1 id="文章参考"><a href="#文章参考" class="headerlink" title="文章参考"></a>文章参考</h1><p><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/web/275842.html">https://www.freebuf.com/articles/web/275842.html</a> 分析了链中每个函数。</p>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/4761">https://xz.aliyun.com/t/4761</a> 探究从ObjectOutputStream:readObject方法如何到达反序列化类的readObject方法。</p>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/9417#toc-2">https://xz.aliyun.com/t/9417#toc-2</a> </p>
+<p>之前有点奇怪，为什么有的文章写的是putVal，而我调试时是putForCreate，现在明白了，他们看的是jdk1.8，我看的是jdk1.7</p>
+<p><a target="_blank" rel="noopener" href="http://wjlshare.com/archives/1493">http://wjlshare.com/archives/1493</a></p>
+<p>提到了yso为何会用自定义的handler，有一处细节，URL的handler变量使用的transient修饰，在序列化时并不会被一起序列化。</p>
+<p><a target="_blank" rel="noopener" href="https://rmb122.com/2020/01/20/ysoserial-URLDNS-CommonsCollectionsX-%E5%88%86%E6%9E%90/">https://rmb122.com/2020/01/20/ysoserial-URLDNS-CommonsCollectionsX-%E5%88%86%E6%9E%90/</a></p>
+<p>可以理解为, 在序列化 HashMap 类的对象时, 为了减小序列化后的大小, 并没有将整个哈希表保存进去, 而是仅仅保存了所有内部存储的 key 和 value. 所以在反序列化时, 需要重新计算所有 key 的 hash, 然后与 value 一起放入哈希表中. 而恰好, URL 这个对象计算 hash 的过程中用了 getHostAddress 查询了 URL 的主机地址, 自然需要发出 DNS 请求.</p>
+<p>很有意思的角度</p>
+<h1 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h1><ol>
+<li>在这次调试的过程中，我是先看了ysoserial中URLDNSpayload的注释里的调用链，然后自己尝试编写payload。由于dns有缓存机制，一开始很难去判断自己的payload是不是对的。最后还是看了ysoserial的payload，知道了需要通过反射设置hashCode来触发和自定义handler来避免序列化时的dns lookup.</li>
+<li>在这次学习中发现自己只关注了方法的调用，而忽略了方法周围的逻辑。光是找方法调用点是不行的，还需要考虑方法周围的逻辑，是否会对方法的触发产生影响。</li>
+</ol>
+<h1 id="最后问题"><a href="#最后问题" class="headerlink" title="最后问题"></a>最后问题</h1><p>是先有sink还是先有source？</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#URL%E9%93%BE%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">URL链整体流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%97%AE%E9%A2%98"><span class="toc-number">3.</span> <span class="toc-text">问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ysoserial%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E9%9C%80%E8%A6%81%E9%80%9A%E8%BF%87%E5%8F%8D%E5%B0%84%E5%B0%86hashCode%E8%AE%BE%E7%BD%AE%E4%B8%BA-1"><span class="toc-number">3.1.</span> <span class="toc-text">ysoserial为什么要需要通过反射将hashCode设置为-1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E4%BF%AE%E6%94%B9%E4%BA%8C%E8%BF%9B%E5%88%B6payload%E4%B8%AD%E7%9A%84dnslog%E5%9C%B0%E5%9D%80%EF%BC%8C%E6%98%AF%E5%90%A6%E4%BC%9A%E5%BD%B1%E5%93%8Dpayload%E4%BD%BF%E7%94%A8%EF%BC%9F"><span class="toc-number">3.2.</span> <span class="toc-text">直接修改二进制payload中的dnslog地址，是否会影响payload使用？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ysoserial%E7%9A%84%E8%87%AA%E5%AE%9A%E4%B9%89URLStreamHandler%E6%98%AF%E8%B5%B7%E4%BB%80%E4%B9%88%E4%BD%9C%E7%94%A8%EF%BC%9F"><span class="toc-number">3.3.</span> <span class="toc-text">ysoserial的自定义URLStreamHandler是起什么作用？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8%E8%B0%83%E8%AF%95%E6%97%B6%EF%BC%8C%E4%B8%BA%E4%BD%95%E4%BC%9A%E5%9C%A8%E4%B8%80%E5%BC%80%E5%A7%8B%E5%87%BA%E7%8E%B0%E4%B8%A4%E6%AC%A1URLStreamHandler-hashCode%E6%96%B9%E6%B3%95%E7%9A%84%E8%B0%83%E7%94%A8%EF%BC%9F"><span class="toc-number">3.4.</span> <span class="toc-text">在调试时，为何会在一开始出现两次URLStreamHandler:hashCode方法的调用？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%97%B6%EF%BC%8C%E8%A6%81%E5%A6%82%E4%BD%95%E8%B0%83%E8%AF%95%E8%BF%9B%E5%85%A5hashmap%E7%9A%84readObject%E6%96%B9%E6%B3%95%EF%BC%9F"><span class="toc-number">3.5.</span> <span class="toc-text">反序列化时，要如何调试进入hashmap的readObject方法？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E7%AB%A0%E5%8F%82%E8%80%83"><span class="toc-number">4.</span> <span class="toc-text">文章参考</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%9D%E8%80%83"><span class="toc-number">5.</span> <span class="toc-text">思考</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%80%E5%90%8E%E9%97%AE%E9%A2%98"><span class="toc-number">6.</span> <span class="toc-text">最后问题</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&text=java反序列化-URL链"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&title=java反序列化-URL链"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&is_video=false&description=java反序列化-URL链"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=java反序列化-URL链&body=Check out this article: http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&title=java反序列化-URL链"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&title=java反序列化-URL链"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&title=java反序列化-URL链"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&title=java反序列化-URL链"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&name=java反序列化-URL链&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2022/01/22/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96-URL%E9%93%BE/&t=java反序列化-URL链"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2021-2022
+    芝麻糊
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

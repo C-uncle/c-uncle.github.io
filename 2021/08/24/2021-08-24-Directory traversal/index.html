@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Directory traversal目录遍历漏洞，通常是由于服务器配置错误或代码层错误导致。攻击者可以利用该漏洞实现跨目录查看文件。 Reading arbitrary files via directory traversal通过目录遍历读取任意文件。 假设有一个购物网站，该网站在展示商品图片时使用了像下面一样的HTML标签。 1&lt;img src&#x3D;&quot;&#x2F;loadImage?fil">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burpsuite Academy系列教程-Directory traversal">
+<meta property="og:url" content="http://example.com/2021/08/24/2021-08-24-Directory%20traversal/index.html">
+<meta property="og:site_name" content="想逃避现实的芝麻糊">
+<meta property="og:description" content="Directory traversal目录遍历漏洞，通常是由于服务器配置错误或代码层错误导致。攻击者可以利用该漏洞实现跨目录查看文件。 Reading arbitrary files via directory traversal通过目录遍历读取任意文件。 假设有一个购物网站，该网站在展示商品图片时使用了像下面一样的HTML标签。 1&lt;img src&#x3D;&quot;&#x2F;loadImage?fil">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-08-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-22T11:31:11.380Z">
+<meta property="article:author" content="芝麻糊">
+<meta property="article:tag" content="Burpsuite Academy系列教程">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/logo.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/logo.ico" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/logo.ico">
+        
+      
+    
+    <!-- title -->
+    <title>Burpsuite Academy系列教程-Directory traversal</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2021/12/28/%E5%AD%A6%E4%B9%A0CC1%E9%93%BE%E4%BB%A5%E5%90%8E%E7%9A%84%E6%80%9D%E8%80%83/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/08/23/2021-08-23-SSRF/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&text=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&title=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&is_video=false&description=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Burpsuite Academy系列教程-Directory traversal&body=Check out this article: http://example.com/2021/08/24/2021-08-24-Directory%20traversal/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&title=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&title=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&title=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&title=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&name=Burpsuite Academy系列教程-Directory traversal&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&t=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Directory-traversal"><span class="toc-number">1.</span> <span class="toc-text">Directory traversal</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Reading-arbitrary-files-via-directory-traversal"><span class="toc-number">1.1.</span> <span class="toc-text">Reading arbitrary files via directory traversal</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-File-path-traversal-simple-case"><span class="toc-number">1.1.0.1.</span> <span class="toc-text">Lab: File path traversal, simple case</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Common-obstacles-to-exploiting-file-path-traversal-vulnerabilities"><span class="toc-number">1.2.</span> <span class="toc-text">Common obstacles to exploiting file path traversal vulnerabilities</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-File-path-traversal-traversal-sequences-blocked-with-absolute-path-bypass"><span class="toc-number">1.2.0.1.</span> <span class="toc-text">Lab: File path traversal, traversal sequences blocked with absolute path bypass</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-File-path-traversal-traversal-sequences-stripped-non-recursively"><span class="toc-number">1.2.0.2.</span> <span class="toc-text">Lab: File path traversal, traversal sequences stripped non-recursively</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-File-path-traversal-traversal-sequences-stripped-with-superfluous-URL-decode"><span class="toc-number">1.2.0.3.</span> <span class="toc-text">Lab: File path traversal, traversal sequences stripped with superfluous URL-decode</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-File-path-traversal-validation-of-start-of-path"><span class="toc-number">1.2.0.4.</span> <span class="toc-text">Lab: File path traversal, validation of start of path</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-File-path-traversal-validation-of-file-extension-with-null-byte-bypass"><span class="toc-number">1.2.0.5.</span> <span class="toc-text">Lab: File path traversal, validation of file extension with null byte bypass</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#How-to-prevent-a-directory-traversal-attack"><span class="toc-number">2.</span> <span class="toc-text">How to prevent a directory traversal attack</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Burpsuite Academy系列教程-Directory traversal
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">c-uncle</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-08-23T16:00:00.000Z" itemprop="datePublished">2021-08-24</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Burpsuite-Academy%E7%B3%BB%E5%88%97%E6%95%99%E7%A8%8B/" rel="tag">Burpsuite Academy系列教程</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="Directory-traversal"><a href="#Directory-traversal" class="headerlink" title="Directory traversal"></a>Directory traversal</h1><p>目录遍历漏洞，通常是由于服务器配置错误或代码层错误导致。攻击者可以利用该漏洞实现跨目录查看文件。</p>
+<h2 id="Reading-arbitrary-files-via-directory-traversal"><a href="#Reading-arbitrary-files-via-directory-traversal" class="headerlink" title="Reading arbitrary files via directory traversal"></a>Reading arbitrary files via directory traversal</h2><p>通过目录遍历读取任意文件。</p>
+<p>假设有一个购物网站，该网站在展示商品图片时使用了像下面一样的HTML标签。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;img src=&quot;/loadImage?filename=218.png&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p>我们可以得知，站点的/loadImage功能会根据参数filename获取对应的图片，如果攻击者可以控制filename，那么就有可能实现一个任意文件读取。</p>
+<p>如果站点存放图片的路径为/var/www/images/，那么攻击者可以构造如下payload来进行攻击。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">payload</span><br><span class="line">/loadImage?filename=../../../etc/passwd</span><br></pre></td></tr></table></figure>
+
+<p>../表示当前文件夹的上一层文件夹，例如，当前路径为/var/www/images，此时../表示的就是/var/www/。多个../是有叠加效果的。对于/var/www/images/，三个../表示根目录/。</p>
+<p>对于根目录来说，/的../依旧是/。也就是说，如果我们不知道绝对路径，依旧能够利用../来实现目录遍历，只要添加足够多的../</p>
+<h4 id="Lab-File-path-traversal-simple-case"><a href="#Lab-File-path-traversal-simple-case" class="headerlink" title="Lab: File path traversal, simple case"></a>Lab: File path traversal, simple case</h4><p>目标：利用目录遍历漏洞获取/etc/passwd的内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">payload</span><br><span class="line">image?filename=../../../etc/passwd</span><br></pre></td></tr></table></figure>
+
+<p>如果是在浏览器里执行这个payload，那么就把图片保存下来，用记事本打开就行了。</p>
+<h2 id="Common-obstacles-to-exploiting-file-path-traversal-vulnerabilities"><a href="#Common-obstacles-to-exploiting-file-path-traversal-vulnerabilities" class="headerlink" title="Common obstacles to exploiting file path traversal vulnerabilities"></a>Common obstacles to exploiting file path traversal vulnerabilities</h2><p>下面几个lab将讲解绕过目录遍历检测的方法。</p>
+<h4 id="Lab-File-path-traversal-traversal-sequences-blocked-with-absolute-path-bypass"><a href="#Lab-File-path-traversal-traversal-sequences-blocked-with-absolute-path-bypass" class="headerlink" title="Lab: File path traversal, traversal sequences blocked with absolute path bypass"></a>Lab: File path traversal, traversal sequences blocked with absolute path bypass</h4><p>场景：应用程序禁止目录遍历序列，也就是禁止../，但是将用户提供的文件名视为相对于默认工作目录。</p>
+<p>目标：获取/etc/passwd</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">payload</span><br><span class="line">image?filename=/etc/passwd</span><br></pre></td></tr></table></figure>
+
+<h4 id="Lab-File-path-traversal-traversal-sequences-stripped-non-recursively"><a href="#Lab-File-path-traversal-traversal-sequences-stripped-non-recursively" class="headerlink" title="Lab: File path traversal, traversal sequences stripped non-recursively"></a>Lab: File path traversal, traversal sequences stripped non-recursively</h4><p>场景：应用程序去除文件名参数中的路径遍历序列，也就是去除../</p>
+<p>目标：获取/etc/passwd</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">payload</span><br><span class="line">image?filename=..././..././..././etc/passwd</span><br></pre></td></tr></table></figure>
+
+<p>尝试image?filename=../62.jpg，页面显示正常，我怀疑应用程序是将../过滤了，因此这里采用双写../来绕过。</p>
+<h4 id="Lab-File-path-traversal-traversal-sequences-stripped-with-superfluous-URL-decode"><a href="#Lab-File-path-traversal-traversal-sequences-stripped-with-superfluous-URL-decode" class="headerlink" title="Lab: File path traversal, traversal sequences stripped with superfluous URL-decode"></a>Lab: File path traversal, traversal sequences stripped with superfluous URL-decode</h4><p>目标：获取/etc/passwd</p>
+<p>场景：应用程序在使用用户提交的参数前会对参数进行解码操作。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">payload</span><br><span class="line">image?filename=..%252F..%252F..%252Fetc%252Fpasswd</span><br><span class="line">未编码前的payload</span><br><span class="line">image?filename=../../../etc/passwd</span><br></pre></td></tr></table></figure>
+
+<p>我先尝试对payload进行了一次编码，未能通过，猜想对参数的过滤应该也是解码后进行的，因此尝试二次编码，成功绕过。</p>
+<h4 id="Lab-File-path-traversal-validation-of-start-of-path"><a href="#Lab-File-path-traversal-validation-of-start-of-path" class="headerlink" title="Lab: File path traversal, validation of start of path"></a>Lab: File path traversal, validation of start of path</h4><p>场景：应用程序要求用户提交的参数是绝对路径，并且要以/var/www/images/开头。</p>
+<p>目标：获取/etc/passwd</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">payload</span><br><span class="line">image?filename=/var/www/images/../../../etc/passwd</span><br></pre></td></tr></table></figure>
+
+<p>由于一定要以/var/www/images/作为路径开头，那么我们可以利用../来进行目录遍历</p>
+<h4 id="Lab-File-path-traversal-validation-of-file-extension-with-null-byte-bypass"><a href="#Lab-File-path-traversal-validation-of-file-extension-with-null-byte-bypass" class="headerlink" title="Lab: File path traversal, validation of file extension with null byte bypass"></a>Lab: File path traversal, validation of file extension with null byte bypass</h4><p>场景：应用程序会对用户提交的文件名参数进行后缀验证，确保用户访问的文件合法。</p>
+<p>目标：获取/etc/passwd</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">payload</span><br><span class="line">image?filename=../../../etc/passwd%00.jpg</span><br></pre></td></tr></table></figure>
+
+<p>利用%00截断来绕过后缀检测。</p>
+<h1 id="How-to-prevent-a-directory-traversal-attack"><a href="#How-to-prevent-a-directory-traversal-attack" class="headerlink" title="How to prevent a directory traversal attack"></a>How to prevent a directory traversal attack</h1><p>防止目录遍历最有效的方法是避免用户提交的参数交付给系统API处理。如果非要这么做，可以从下面两个方面来预防。</p>
+<ol>
+<li>设置白名单，验证用户输入是否合法</li>
+<li>验证后，在调用系统API处理用户输入后，检查一下处理后的路径是否合法。这里指的是../被系统处理后真正的路径。</li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Directory-traversal"><span class="toc-number">1.</span> <span class="toc-text">Directory traversal</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Reading-arbitrary-files-via-directory-traversal"><span class="toc-number">1.1.</span> <span class="toc-text">Reading arbitrary files via directory traversal</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-File-path-traversal-simple-case"><span class="toc-number">1.1.0.1.</span> <span class="toc-text">Lab: File path traversal, simple case</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Common-obstacles-to-exploiting-file-path-traversal-vulnerabilities"><span class="toc-number">1.2.</span> <span class="toc-text">Common obstacles to exploiting file path traversal vulnerabilities</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-File-path-traversal-traversal-sequences-blocked-with-absolute-path-bypass"><span class="toc-number">1.2.0.1.</span> <span class="toc-text">Lab: File path traversal, traversal sequences blocked with absolute path bypass</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-File-path-traversal-traversal-sequences-stripped-non-recursively"><span class="toc-number">1.2.0.2.</span> <span class="toc-text">Lab: File path traversal, traversal sequences stripped non-recursively</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-File-path-traversal-traversal-sequences-stripped-with-superfluous-URL-decode"><span class="toc-number">1.2.0.3.</span> <span class="toc-text">Lab: File path traversal, traversal sequences stripped with superfluous URL-decode</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-File-path-traversal-validation-of-start-of-path"><span class="toc-number">1.2.0.4.</span> <span class="toc-text">Lab: File path traversal, validation of start of path</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Lab-File-path-traversal-validation-of-file-extension-with-null-byte-bypass"><span class="toc-number">1.2.0.5.</span> <span class="toc-text">Lab: File path traversal, validation of file extension with null byte bypass</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#How-to-prevent-a-directory-traversal-attack"><span class="toc-number">2.</span> <span class="toc-text">How to prevent a directory traversal attack</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&text=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&title=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&is_video=false&description=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Burpsuite Academy系列教程-Directory traversal&body=Check out this article: http://example.com/2021/08/24/2021-08-24-Directory%20traversal/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&title=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&title=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&title=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&title=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&name=Burpsuite Academy系列教程-Directory traversal&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/08/24/2021-08-24-Directory%20traversal/&t=Burpsuite Academy系列教程-Directory traversal"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2021-2022
+    芝麻糊
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

